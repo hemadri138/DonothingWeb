@@ -263,6 +263,12 @@
   /* ── BOTTOM TABS ── */
   #tabs {
     display: flex; gap: 8px; margin-bottom: 14px; width: 100%;
+    position: sticky; top: 10px; z-index: 6;
+    padding: 6px;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    background: rgba(5,5,8,0.7);
+    backdrop-filter: blur(10px);
   }
   .tab-btn {
     flex: 1; padding: 8px 4px; border-radius: 10px;
@@ -397,6 +403,41 @@
     box-shadow: 0 0 18px rgba(127,255,110,0.55);
     transition: width 0.2s ease;
   }
+  #energy-wrap.peak {
+    border-color: rgba(127,255,110,0.45);
+    box-shadow: 0 0 20px rgba(127,255,110,0.2);
+  }
+  #missions {
+    width: 100%;
+    margin-bottom: 12px;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    background: var(--surface);
+    padding: 10px;
+  }
+  #missions-title {
+    font-size: 0.64rem;
+    color: var(--muted);
+    font-family: 'JetBrains Mono', monospace;
+    margin-bottom: 8px;
+  }
+  .mission {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.68rem;
+    padding: 7px 8px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    margin-bottom: 6px;
+    font-family: 'JetBrains Mono', monospace;
+  }
+  .mission:last-child { margin-bottom: 0; }
+  .mission.done {
+    border-color: rgba(127,255,110,0.4);
+    color: var(--accent);
+    background: rgba(127,255,110,0.06);
+  }
   #combo-pop {
     position: fixed;
     left: 50%;
@@ -525,6 +566,26 @@
   #boss-overlay { background: rgba(0,0,0,0.86); z-index: 430; }
   #boss-overlay h2 { font-size: 2rem; color: #fff; margin-bottom: 6px; }
   #boss-overlay p { color: var(--muted); font-family: 'JetBrains Mono', monospace; }
+  #boss-hp-wrap {
+    width: min(360px, 84vw);
+    margin: 12px auto 0;
+    border: 1px solid rgba(255,255,255,0.2);
+    border-radius: 999px;
+    height: 10px;
+    overflow: hidden;
+  }
+  #boss-hp-fill {
+    height: 100%;
+    width: 100%;
+    background: linear-gradient(90deg, #ff6ef0, #ff4d4d);
+    transition: width 0.2s linear;
+  }
+  #boss-hp-text {
+    margin-top: 8px;
+    font-size: 0.72rem;
+    color: #ff9ad7;
+    font-family: 'JetBrains Mono', monospace;
+  }
   #dev-panel { background: rgba(10,0,20,0.92); z-index: 440; }
   #dev-panel .dev-box {
     width: min(420px, 90vw);
@@ -679,6 +740,14 @@
   /* Mode: retro90 */
   body.retro90-mode { background: #180022; }
   body.retro90-mode { --particle-color: 255, 170, 120; --btn-color: #ffaa78; --accent: #ffaa78; }
+  body.ember-mode { background: #180804; }
+  body.ember-mode { --particle-color: 255, 125, 90; --btn-color: #ff7d5a; --accent: #ff7d5a; }
+  body.aurora-mode { background: #02131a; }
+  body.aurora-mode { --particle-color: 110, 255, 220; --btn-color: #6effdc; --accent: #6effdc; }
+  body.eclipse-mode { background: #08080f; }
+  body.eclipse-mode { --particle-color: 160, 160, 200; --btn-color: #a0a0c8; --accent: #a0a0c8; }
+  body.prism-mode { background: #120014; }
+  body.prism-mode { --particle-color: 255, 120, 220; --btn-color: #ff78dc; --accent: #ff78dc; }
 
   /* Scrollable content in panels */
   .panel-inner { max-height: min(360px, 45vh); overflow-y: auto; }
@@ -687,6 +756,10 @@
   .panel-inner::-webkit-scrollbar-thumb { background: var(--border); border-radius: 99px; }
 
   #ach-panel { width: 100%; }
+  body[data-page="ach-panel"] .main-only,
+  body[data-page="settings-panel"] .main-only {
+    display: none;
+  }
 
   @media (max-height: 760px) {
     body { justify-content: flex-start; }
@@ -704,7 +777,13 @@
     <p>The world's most purposeless app</p>
   </div>
 
-  <div id="stats">
+  <div id="tabs">
+    <button class="tab-btn active" onclick="switchTab('main-panel',this)" data-panel="main-panel">🏠 Home</button>
+    <button class="tab-btn" onclick="switchTab('ach-panel',this)" data-panel="ach-panel">🏆 Badges</button>
+    <button class="tab-btn" onclick="switchTab('settings-panel',this)" data-panel="settings-panel">⚙️ Settings</button>
+  </div>
+
+  <div id="stats" class="main-only">
     <div class="stat-card">
       <span class="stat-val" id="tap-count">0</span>
       <span class="stat-label">Nothings</span>
@@ -719,7 +798,7 @@
     </div>
   </div>
 
-  <div id="xp-wrap">
+  <div id="xp-wrap" class="main-only">
     <div id="xp-header">
       <span id="level-label">Level 1 — Beginner of Nothing</span>
       <span id="xp-label">0 / 25 XP</span>
@@ -727,7 +806,7 @@
     <div id="xp-track"><div id="xp-fill" style="width:0%"></div></div>
   </div>
 
-  <div id="streak-bar">
+  <div id="streak-bar" class="main-only">
     <span id="streak-fire">🔥</span>
     <span id="streak-text">
       <span id="streak-num">0</span> day nothing streak
@@ -735,27 +814,27 @@
     </span>
   </div>
 
-  <div id="btn-arena">
+  <div id="btn-arena" class="main-only">
     <button id="do-nothing-btn"><span id="btn-text">DO<br>NOTHING</span></button>
   </div>
 
-  <div id="msg-box">
+  <div id="msg-box" class="main-only">
     <span id="msg-text">Press the button to begin doing nothing.</span>
   </div>
 
-  <div id="timer-line">⏱ Session time: <span id="session-time">0:00</span> — You've spent this long doing absolutely nothing.</div>
-  <div id="energy-wrap">
+  <div id="timer-line" class="main-only">⏱ Session time: <span id="session-time">0:00</span> — You've spent this long doing absolutely nothing.</div>
+  <div id="energy-wrap" class="main-only">
     <div id="energy-head">
       <span>Nothing Energy</span>
       <span id="energy-label">0 / 100</span>
     </div>
     <div id="energy-track"><div id="energy-fill"></div></div>
   </div>
-
-  <div id="tabs">
-    <button class="tab-btn active" onclick="switchTab('main-panel',this)">🏠 Main</button>
-    <button class="tab-btn" onclick="switchTab('ach-panel',this)">🏆 Badges</button>
-    <button class="tab-btn" onclick="switchTab('settings-panel',this)">⚙️ Settings</button>
+  <div id="missions" class="main-only">
+    <div id="missions-title">Daily Nothing Missions</div>
+    <div class="mission" id="mission-taps"><span>Tap 60 times</span><span id="mission-taps-val">0/60</span></div>
+    <div class="mission" id="mission-coins"><span>Earn 80 coins</span><span id="mission-coins-val">0/80</span></div>
+    <div class="mission" id="mission-idle"><span>Enter True Idle once</span><span id="mission-idle-val">0/1</span></div>
   </div>
 
   <div id="main-panel" class="panel active">
@@ -838,6 +917,12 @@
           <button class="bg-pill" onclick="setBgMode('neon',this)">🌈 Neon Cyber</button>
           <button class="bg-pill" onclick="setBgMode('zen',this)">🪟 Zen Glass</button>
           <button class="bg-pill" onclick="setBgMode('retro90',this)">📼 Retro 90s</button>
+          <button class="bg-pill" onclick="setBgMode('ocean',this)">🌊 Ocean Drift</button>
+          <button class="bg-pill" onclick="setBgMode('matrix',this)">🧠 Matrix Rain</button>
+          <button class="bg-pill" onclick="setBgMode('ember',this)">🔥 Ember Dusk</button>
+          <button class="bg-pill" onclick="setBgMode('aurora',this)">❄️ Aurora Frost</button>
+          <button class="bg-pill" onclick="setBgMode('eclipse',this)">🌑 Eclipse Noir</button>
+          <button class="bg-pill" onclick="setBgMode('prism',this)">🎆 Prism Rave</button>
         </div>
       </div>
       <div class="setting-row" style="display:block;">
@@ -846,10 +931,10 @@
           <span class="setting-sub">Coins: <span id="coin-count">0</span></span>
         </div>
         <div id="shop-grid">
-          <div class="shop-item">Button Skin<br><button onclick="buyItem('skin',30)">Buy 30</button></div>
-          <div class="shop-item">Theme Unlock<br><button onclick="buyItem('theme',50)">Buy 50</button></div>
-          <div class="shop-item">Particle Boost<br><button onclick="buyItem('particles',40)">Buy 40</button></div>
-          <div class="shop-item">Glow Intensity<br><button onclick="buyItem('glow',25)">Buy 25</button></div>
+          <div class="shop-item">Button Skin<br><button id="shop-skin" onclick="buyItem('skin',30)">Buy 30</button></div>
+          <div class="shop-item">Theme Unlock<br><button id="shop-theme" onclick="buyItem('theme',50)">Buy 50</button></div>
+          <div class="shop-item">Particle Boost<br><button id="shop-particles" onclick="buyItem('particles',40)">Buy 40</button></div>
+          <div class="shop-item">Glow Intensity<br><button id="shop-glow" onclick="buyItem('glow',25)">Buy 25</button></div>
         </div>
       </div>
       <div class="setting-row" style="display:block;">
@@ -888,7 +973,14 @@
 <div id="toast"></div>
 <div id="combo-pop"></div>
 <div id="idle-overlay"><div class="idle-text">Now this is real nothing.</div></div>
-<div id="boss-overlay" onclick="defeatBoss()"><div><h2>The Void</h2><p>Tap to defeat nothing.</p></div></div>
+<div id="boss-overlay" onclick="defeatBoss()">
+  <div>
+    <h2>The Void</h2>
+    <p>Tap to defeat nothing.</p>
+    <div id="boss-hp-wrap"><div id="boss-hp-fill"></div></div>
+    <div id="boss-hp-text">HP: 10 / 10</div>
+  </div>
+</div>
 <div id="dev-panel">
   <div class="dev-box">
     <h3>Developer of Nothing</h3>
@@ -927,13 +1019,17 @@ const state = {
   comboTimer: null,
   energy: parseInt(localStorage.getItem('energy') || '0'),
   bossActive: false,
+  bossHP: parseInt(localStorage.getItem('bossHP') || '10'),
   bossDefeated: localStorage.getItem('bossDefeated') === '1',
   idleTimer: null,
+  idleEntries: parseInt(localStorage.getItem('idleEntries') || '0'),
   ambientNode: null,
   sureStep: 0,
   particlesBoost: localStorage.getItem('particlesBoost') === '1',
   glowBoost: localStorage.getItem('glowBoost') === '1',
   unlockedThemes: JSON.parse(localStorage.getItem('unlockedThemes') || '[]'),
+  missionRewardClaimed: localStorage.getItem('missionRewardClaimed') === '1',
+  missionDate: localStorage.getItem('missionDate') || new Date().toDateString(),
   sessionStart: Date.now(),
 };
 
@@ -955,16 +1051,25 @@ function save() {
   localStorage.setItem('existential', state.existential ? '1' : '0');
   localStorage.setItem('proMode', state.proMode ? '1' : '0');
   localStorage.setItem('prestige', String(state.prestige));
+  localStorage.setItem('bossHP', String(state.bossHP));
   localStorage.setItem('bossDefeated', state.bossDefeated ? '1' : '0');
+  localStorage.setItem('idleEntries', String(state.idleEntries));
   localStorage.setItem('particlesBoost', state.particlesBoost ? '1' : '0');
   localStorage.setItem('glowBoost', state.glowBoost ? '1' : '0');
   localStorage.setItem('unlockedThemes', JSON.stringify(state.unlockedThemes));
+  localStorage.setItem('missionRewardClaimed', state.missionRewardClaimed ? '1' : '0');
+  localStorage.setItem('missionDate', state.missionDate);
   localStorage.setItem('bgMode', state.bgMode);
 }
 
 // ── STREAK ──
 function checkStreak() {
   const today = new Date().toDateString();
+  if (state.missionDate !== today) {
+    state.missionDate = today;
+    state.missionRewardClaimed = false;
+    state.idleEntries = 0;
+  }
   if (state.lastDate === today) return;
   const yesterday = new Date(Date.now() - 86400000).toDateString();
   if (state.lastDate === yesterday) state.streak++;
@@ -1049,15 +1154,78 @@ function getQuote() {
 }
 
 // ── LEVELS ──
-const levels = [
-  [0,'Beginner of Nothing'], [5,'Casual Idler'], [10,'Skilled Idler'],
-  [20,'Void Apprentice'], [40,'Procrastination Pro'], [75,'Zen Wanderer'],
-  [100,'Void Architect'], [150,'Supreme Nothingness'], [200,'God of Nothing'],
+const levelTitles = [
+  'Beginner of Nothing',
+  'Casual Idler',
+  'Skilled Idler',
+  'Void Apprentice',
+  'Procrastination Pro',
+  'Zen Wanderer',
+  'Void Architect',
+  'Supreme Nothingness',
+  'God of Nothing',
+  'Cosmic Slacker',
 ];
-function getLevel(taps) {
-  let l = levels[0];
-  for (const lv of levels) { if (taps >= lv[0]) l = lv; else break; }
-  return l;
+const levels = Array.from({ length: 101 }, (_, i) => [i * 10, `${levelTitles[Math.floor(i / 10)]} ${i > 0 ? `#${i}` : ''}`.trim()]);
+const themeLevelReq = {
+  space: 1,
+  minimal: 3,
+  neon: 8,
+  zen: 12,
+  retro90: 18,
+  ocean: 24,
+  matrix: 32,
+  ember: 45,
+  aurora: 58,
+  eclipse: 72,
+  prism: 90,
+};
+const autoThemeByLevel = [
+  [1, 'space', 'Cosmic Void'],
+  [3, 'minimal', 'Calm Minimal'],
+  [8, 'neon', 'Neon Cyber'],
+  [12, 'zen', 'Zen Glass'],
+  [18, 'retro90', 'Retro 90s'],
+  [24, 'ocean', 'Ocean Drift'],
+  [32, 'matrix', 'Matrix Rain'],
+  [45, 'ember', 'Ember Dusk'],
+  [58, 'aurora', 'Aurora Frost'],
+  [72, 'eclipse', 'Eclipse Noir'],
+  [90, 'prism', 'Prism Rave'],
+];
+function getLevelInfo(taps) {
+  let idx = 0;
+  for (let i = 0; i < levels.length; i++) {
+    if (taps >= levels[i][0]) idx = i;
+    else break;
+  }
+  return { index: idx, min: levels[idx][0], name: levels[idx][1], next: levels[idx + 1] || null };
+}
+function isThemeUnlocked(mode) {
+  const lvl = getLevelInfo(state.totalTaps).index + 1;
+  const req = themeLevelReq[mode] || 1;
+  return lvl >= req || state.unlockedThemes.includes(mode);
+}
+
+function applyThemeByMode(mode) {
+  state.bgMode = mode;
+  document.body.className = mode !== 'space' ? mode + '-mode' : '';
+  document.querySelectorAll('#ambient-modes .bg-pill').forEach((p) => p.classList.remove('active'));
+  document.querySelector(`#ambient-modes .bg-pill[onclick*="${mode}"]`)?.classList.add('active');
+  initParticles();
+}
+
+function autoApplyThemeOnLevelUp(level) {
+  let chosen = autoThemeByLevel[0];
+  for (const item of autoThemeByLevel) {
+    if (level >= item[0]) chosen = item;
+    else break;
+  }
+  const [req, mode, label] = chosen;
+  if (level < req || !isThemeUnlocked(mode) || state.bgMode === mode) return;
+  applyThemeByMode(mode);
+  save();
+  showToast(`Theme unlocked: ${label}`);
 }
 
 // ── ACHIEVEMENTS ──
@@ -1115,23 +1283,93 @@ function updateUI() {
   document.getElementById('coin-count').textContent = state.coins;
   document.getElementById('energy-label').textContent = `${state.energy} / 100`;
   document.getElementById('energy-fill').style.width = Math.min(100, state.energy) + '%';
+  document.getElementById('energy-wrap').classList.toggle('peak', state.energy >= 90);
   document.getElementById('prestige-btn').disabled = state.totalTaps < 500;
 
   // XP / Level
-  const lv = getLevel(state.totalTaps);
-  const lvIdx = levels.indexOf(lv);
-  const nextLv = levels[lvIdx + 1];
-  const xpMin = lv[0], xpMax = nextLv ? nextLv[0] : xpMin + 50;
+  const lv = getLevelInfo(state.totalTaps);
+  const xpMin = lv.min;
+  const xpMax = lv.next ? lv.next[0] : xpMin + 1;
   const xp = state.totalTaps - xpMin;
-  const xpRange = xpMax - xpMin;
+  const xpRange = Math.max(1, xpMax - xpMin);
   const pct = Math.min(100, Math.round(xp / xpRange * 100));
-  document.getElementById('level-label').textContent = `Level ${lvIdx + 1} — ${lv[1]}`;
+  document.getElementById('level-label').textContent = `Level ${lv.index + 1} — ${lv.name}`;
   document.getElementById('xp-label').textContent = `${xp} / ${xpRange} XP`;
   document.getElementById('xp-fill').style.width = pct + '%';
 
   // Button evolution
   updateButton();
   updateScanner();
+  updateBossUI();
+  updateMissionUI();
+  updateShopUI();
+  updateThemeButtons();
+}
+
+function updateBossUI() {
+  const hp = Math.max(0, Math.min(10, state.bossHP));
+  document.getElementById('boss-hp-fill').style.width = `${hp * 10}%`;
+  document.getElementById('boss-hp-text').textContent = `HP: ${hp} / 10`;
+}
+
+function updateMissionUI() {
+  const taps = Math.min(60, state.totalTaps);
+  const coins = Math.min(80, state.coins);
+  const idle = Math.min(1, state.idleEntries > 0 ? 1 : 0);
+  document.getElementById('mission-taps-val').textContent = `${taps}/60`;
+  document.getElementById('mission-coins-val').textContent = `${coins}/80`;
+  document.getElementById('mission-idle-val').textContent = `${idle}/1`;
+  document.getElementById('mission-taps').classList.toggle('done', taps >= 60);
+  document.getElementById('mission-coins').classList.toggle('done', coins >= 80);
+  document.getElementById('mission-idle').classList.toggle('done', idle >= 1);
+
+  if (taps >= 60 && coins >= 80 && idle >= 1 && !state.missionRewardClaimed) {
+    state.coins += 40;
+    state.missionRewardClaimed = true;
+    showToast('Daily missions complete. +40 Nothing Coins.');
+    save();
+  }
+}
+
+function updateShopUI() {
+  const owned = {
+    skin: state.soundMode === 'retro',
+    theme: state.unlockedThemes.includes('zen') && state.unlockedThemes.includes('retro90'),
+    particles: state.particlesBoost,
+    glow: state.glowBoost
+  };
+  ['skin', 'theme', 'particles', 'glow'].forEach((k) => {
+    const btn = document.getElementById(`shop-${k}`);
+    if (!btn) return;
+    if (owned[k]) {
+      btn.textContent = 'Owned';
+      btn.disabled = true;
+      btn.style.opacity = '0.6';
+      btn.style.cursor = 'default';
+    } else {
+      btn.disabled = false;
+      btn.style.opacity = '1';
+      btn.style.cursor = 'pointer';
+      btn.textContent = k === 'skin' ? 'Buy 30' : k === 'theme' ? 'Buy 50' : k === 'particles' ? 'Buy 40' : 'Buy 25';
+    }
+  });
+}
+
+function updateThemeButtons() {
+  const lvl = getLevelInfo(state.totalTaps).index + 1;
+  document.querySelectorAll('#ambient-modes .bg-pill').forEach((pill) => {
+    const onClick = pill.getAttribute('onclick') || '';
+    const m = onClick.match(/setBgMode\('([^']+)'/);
+    if (!m) return;
+    const mode = m[1];
+    const req = themeLevelReq[mode] || 1;
+    const unlocked = isThemeUnlocked(mode);
+    const base = pill.dataset.base || pill.textContent.replace(/\s+\(Lvl \d+\)$/, '');
+    pill.dataset.base = base;
+    pill.textContent = unlocked ? base : `${base} (Lvl ${req})`;
+    pill.style.opacity = unlocked ? '1' : '0.55';
+    pill.title = unlocked ? `Unlocked at level ${req}` : `Unlocks at level ${req}. Current level ${lvl}`;
+  });
 }
 
 // ── BUTTON EVOLUTION ──
@@ -1213,6 +1451,49 @@ function drawBg() {
     }
   }
 
+  if (mode === 'ember') {
+    ctx.fillStyle = 'rgba(255,120,90,0.05)';
+    for (let i = 0; i < 6; i++) {
+      ctx.beginPath();
+      ctx.arc((i + 1) * (canvas.width / 7), canvas.height * 0.85, 80 + i * 12, 0, Math.PI * 2);
+      ctx.fill();
+    }
+  }
+
+  if (mode === 'aurora') {
+    const t2 = Date.now() * 0.0012;
+    for (let i = 0; i < 4; i++) {
+      ctx.beginPath();
+      for (let x = 0; x <= canvas.width; x += 16) {
+        const y = canvas.height * 0.2 + i * 35 + Math.sin(x * 0.01 + t2 + i) * 20;
+        if (x === 0) ctx.moveTo(x, y);
+        else ctx.lineTo(x, y);
+      }
+      ctx.strokeStyle = `rgba(110,255,220,${0.08 + i * 0.03})`;
+      ctx.lineWidth = 2;
+      ctx.stroke();
+    }
+  }
+
+  if (mode === 'eclipse') {
+    ctx.fillStyle = 'rgba(255,255,255,0.03)';
+    ctx.beginPath();
+    ctx.arc(canvas.width * 0.78, canvas.height * 0.2, 80, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = 'rgba(0,0,0,0.65)';
+    ctx.beginPath();
+    ctx.arc(canvas.width * 0.8, canvas.height * 0.2, 74, 0, Math.PI * 2);
+    ctx.fill();
+  }
+
+  if (mode === 'prism') {
+    const t3 = Date.now() * 0.002;
+    for (let i = 0; i < 12; i++) {
+      ctx.fillStyle = `hsla(${(i * 30 + t3 * 180) % 360}, 90%, 65%, 0.09)`;
+      ctx.fillRect((i * 90 + Math.sin(t3 + i) * 40) % canvas.width, 0, 50, canvas.height);
+    }
+  }
+
   if (mode === 'ocean') {
     // Wave layers
     const t = Date.now() * 0.001;
@@ -1259,7 +1540,16 @@ function drawBg() {
 
   // Particles
   const t = Date.now() * 0.001;
-  const [r,g,b] = mode === 'space' ? [127,255,110] : mode === 'ocean' ? [110,186,255] : mode === 'neon' ? [255,110,240] : mode === 'zen' ? [180,255,240] : mode === 'retro90' ? [255,170,120] : [255,255,255];
+  const [r,g,b] = mode === 'space' ? [127,255,110]
+    : mode === 'ocean' ? [110,186,255]
+    : mode === 'neon' ? [255,110,240]
+    : mode === 'zen' ? [180,255,240]
+    : mode === 'retro90' ? [255,170,120]
+    : mode === 'ember' ? [255,125,90]
+    : mode === 'aurora' ? [110,255,220]
+    : mode === 'eclipse' ? [160,160,200]
+    : mode === 'prism' ? [255,120,220]
+    : [255,255,255];
   particles.forEach((p, i) => {
     p.wave += 0.01;
     p.x += p.vx + Math.sin(p.wave) * (mode === 'ocean' ? 0.4 : 0.2);
@@ -1308,6 +1598,9 @@ function showCombo(text) {
 function triggerEnergy() {
   if (state.energy < 100) return;
   showToast('You have reached peak nothing.');
+  state.coins += 10;
+  document.body.classList.add('reality-glitch');
+  setTimeout(() => document.body.classList.remove('reality-glitch'), 220);
   let v = 100;
   const iv = setInterval(() => {
     v -= 4;
@@ -1321,18 +1614,29 @@ function triggerEnergy() {
 function activateBoss() {
   if (state.bossDefeated || state.bossActive || state.totalTaps < 200) return;
   state.bossActive = true;
+  state.bossHP = 10;
   document.getElementById('boss-overlay').classList.add('show');
   document.body.style.transition = 'filter 0.4s';
   document.body.style.filter = 'brightness(0.55)';
   btn.classList.add('chaos-mode');
+  updateBossUI();
 }
 
 function defeatBoss() {
+  if (!state.bossActive) return;
+  state.bossHP -= 1;
+  updateBossUI();
+  if (state.bossHP > 0) {
+    showCombo(`VOID ${state.bossHP}/10`);
+    return;
+  }
   state.bossActive = false;
   state.bossDefeated = true;
+  state.coins += 75;
   document.getElementById('boss-overlay').classList.remove('show');
   document.body.style.filter = '';
   showToast('You defeated nothing.');
+  save();
 }
 
 function resetIdleTimer() {
@@ -1343,8 +1647,11 @@ function resetIdleTimer() {
     state.ambientNode = null;
   }
   state.idleTimer = setTimeout(() => {
+    state.idleEntries += 1;
     document.getElementById('idle-overlay').classList.add('show');
     playAmbient();
+    updateMissionUI();
+    save();
   }, 30000);
 }
 
@@ -1386,15 +1693,16 @@ function handleCombo() {
   state.comboCount += 1;
   clearTimeout(state.comboTimer);
   state.comboTimer = setTimeout(() => { state.comboCount = 0; }, 1200);
-  if (state.comboCount === 3) showCombo('3x Nothing');
-  if (state.comboCount === 10) showCombo('10x Nothing');
-  if (state.comboCount === 25) showCombo('25x Nothing');
-  if (state.comboCount === 100) showCombo('100x ULTRA NOTHING');
+  if (state.comboCount === 3) { showCombo('3x Nothing'); state.coins += 1; }
+  if (state.comboCount === 10) { showCombo('10x Nothing'); state.coins += 4; }
+  if (state.comboCount === 25) { showCombo('25x Nothing'); state.coins += 12; }
+  if (state.comboCount === 100) { showCombo('100x ULTRA NOTHING'); state.coins += 50; }
 }
 
 // ── TAP HANDLER ──
 const btn = document.getElementById('do-nothing-btn');
 btn.addEventListener('click', function(e) {
+  const prevLevel = getLevelInfo(state.totalTaps).index + 1;
   resetIdleTimer();
 
   if (state.bossActive) {
@@ -1462,6 +1770,11 @@ btn.addEventListener('click', function(e) {
   activateBoss();
   maybeRealityGlitch();
   applyTimeAwareness();
+
+  const newLevel = getLevelInfo(state.totalTaps).index + 1;
+  if (newLevel > prevLevel) {
+    autoApplyThemeOnLevelUp(newLevel);
+  }
 
   save(); updateUI(); checkAchievements(); renderAchievements();
 });
@@ -1622,12 +1935,17 @@ function showToast(msg) {
   toastTimer = setTimeout(() => el.classList.remove('show'), 2500);
 }
 
-// ── TABS ──
-function switchTab(panelId, tabEl) {
+// ── NAVIGATION ──
+function switchTab(panelId, tabEl, updateHash = true) {
   document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
   document.querySelectorAll('.tab-btn').forEach(t => t.classList.remove('active'));
   document.getElementById(panelId).classList.add('active');
   tabEl.classList.add('active');
+  document.body.setAttribute('data-page', panelId);
+  if (updateHash) {
+    const hash = panelId === 'main-panel' ? '#home' : panelId === 'ach-panel' ? '#badges' : '#settings';
+    if (location.hash !== hash) history.replaceState(null, '', hash);
+  }
 }
 
 // ── SETTINGS ──
@@ -1658,8 +1976,10 @@ function setSoundMode(mode, el) {
 }
 
 function setBgMode(mode, el) {
-  if ((mode === 'zen' || mode === 'retro90') && !state.unlockedThemes.includes(mode)) {
-    showToast('Buy Theme Unlock in shop first.');
+  if (!isThemeUnlocked(mode)) {
+    const req = themeLevelReq[mode] || 1;
+    const lvl = getLevelInfo(state.totalTaps).index + 1;
+    showToast(`Theme locked. Reach level ${req} (current ${lvl}).`);
     return;
   }
   state.bgMode = mode;
@@ -1671,6 +1991,10 @@ function setBgMode(mode, el) {
 }
 
 function buyItem(kind, cost) {
+  if (kind === 'skin' && state.soundMode === 'retro') { showToast('Already owned.'); return; }
+  if (kind === 'theme' && state.unlockedThemes.includes('zen') && state.unlockedThemes.includes('retro90')) { showToast('Already owned.'); return; }
+  if (kind === 'particles' && state.particlesBoost) { showToast('Already owned.'); return; }
+  if (kind === 'glow' && state.glowBoost) { showToast('Already owned.'); return; }
   if (state.coins < cost) {
     showToast('Not enough Nothing Coins.');
     return;
@@ -1684,6 +2008,9 @@ function buyItem(kind, cost) {
   save();
   updateUI();
   updateButton();
+  document.querySelectorAll('#sound-modes .bg-pill').forEach((pill) => {
+    pill.classList.toggle('active', pill.textContent.toLowerCase() === state.soundMode);
+  });
 }
 
 function buyProMode() {
@@ -1740,7 +2067,7 @@ function generateStatsCard() {
   c.font = '38px JetBrains Mono';
   c.fillText(`Streak: ${state.streak} days`, 80, 360);
   c.fillText(`Coins: ${state.coins}`, 80, 420);
-  c.fillText(`Level: ${getLevel(state.totalTaps)[1]}`, 80, 480);
+  c.fillText(`Level: ${getLevelInfo(state.totalTaps).name}`, 80, 480);
   c.fillStyle = 'rgba(127,255,110,0.2)';
   c.fillRect(80, 540, 920, 2);
   c.fillStyle = '#6ebaff';
@@ -1805,7 +2132,7 @@ function showEasterEgg() {
 
 // ── SHARE ──
 function shareNothing() {
-  const text = `I've done nothing ${state.totalTaps} times on the Do Nothing App 🌀\nStreak: ${state.streak} days 🔥\nLevel: ${getLevel(state.totalTaps)[1]}\n\n#DoNothing #Productivity`;
+  const text = `I've done nothing ${state.totalTaps} times on the Do Nothing App 🌀\nStreak: ${state.streak} days 🔥\nLevel: ${getLevelInfo(state.totalTaps).name}\n\n#DoNothing #Productivity`;
   if (navigator.share) {
     navigator.share({ title: 'Do Nothing', text }).catch(() => {});
   } else {
@@ -1872,6 +2199,14 @@ setInterval(updateScanner, 2000);
 setInterval(updateGlobalMapCount, 4000);
 setInterval(fakeErrorPulse, 18000);
 
+function applyPageFromHash() {
+  const hash = location.hash.toLowerCase();
+  const panelId = hash === '#badges' ? 'ach-panel' : hash === '#settings' ? 'settings-panel' : 'main-panel';
+  const btn = document.querySelector(`.tab-btn[data-panel="${panelId}"]`) || document.querySelector('.tab-btn[data-panel="main-panel"]');
+  if (btn) switchTab(panelId, btn, false);
+}
+window.addEventListener('hashchange', applyPageFromHash);
+
 // Apply saved toggles/sound mode
 document.getElementById('sound-toggle').classList.toggle('on', state.sound);
 document.getElementById('chaos-toggle').classList.toggle('on', state.chaos);
@@ -1885,13 +2220,17 @@ document.getElementById('sure-indicator').style.display = state.areYouSure ? 'bl
 document.querySelectorAll('#sound-modes .bg-pill').forEach((pill) => {
   pill.classList.toggle('active', pill.textContent.toLowerCase() === state.soundMode);
 });
+applyPageFromHash();
 
 // Apply saved bg mode
-if (state.bgMode !== 'space') {
+if (state.bgMode !== 'space' && isThemeUnlocked(state.bgMode)) {
   document.body.className = state.bgMode + '-mode';
   document.querySelector(`#ambient-modes .bg-pill[onclick*="${state.bgMode}"]`)?.classList.add('active');
   document.querySelector(`#ambient-modes .bg-pill[onclick*="space"]`)?.classList.remove('active');
   initParticles();
+} else if (state.bgMode !== 'space' && !isThemeUnlocked(state.bgMode)) {
+  state.bgMode = 'space';
+  save();
 }
 
 // Activity listeners for idle mode
