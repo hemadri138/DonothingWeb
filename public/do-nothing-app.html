@@ -1,0 +1,1255 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Do Nothing — The App</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #050508;
+    --surface: rgba(255,255,255,0.04);
+    --border: rgba(255,255,255,0.08);
+    --accent: #7fff6e;
+    --accent2: #ff6ef0;
+    --accent3: #6ebaff;
+    --text: #e8e8f0;
+    --muted: rgba(232,232,240,0.4);
+    --btn-color: #7fff6e;
+    --particle-color: 127, 255, 110;
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { width: 100%; min-height: 100%; overflow-x: hidden; overflow-y: auto; }
+  body {
+    font-family: 'Syne', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    min-height: 100vh;
+    padding: 20px 0 28px;
+    transition: background 0.8s ease;
+    user-select: none;
+    cursor: default;
+  }
+
+  /* ── CANVAS BG ── */
+  #bgCanvas {
+    position: fixed; inset: 0; z-index: 0; pointer-events: none;
+  }
+
+  /* ── SHAKE ── */
+  @keyframes shake {
+    0%,100% { transform: translate(0,0) rotate(0deg); }
+    10% { transform: translate(-4px,2px) rotate(-0.5deg); }
+    20% { transform: translate(4px,-2px) rotate(0.5deg); }
+    30% { transform: translate(-3px,3px) rotate(-0.3deg); }
+    40% { transform: translate(3px,-3px) rotate(0.3deg); }
+    50% { transform: translate(-2px,2px) rotate(-0.2deg); }
+    60% { transform: translate(2px,-1px) rotate(0.2deg); }
+    70% { transform: translate(-1px,2px) rotate(-0.1deg); }
+  }
+  body.shake { animation: shake 0.4s ease; }
+
+  /* ── LAYOUT ── */
+  #app {
+    position: relative; z-index: 1;
+    display: flex; flex-direction: column; align-items: center;
+    gap: 0; width: 100%; max-width: 500px; padding: 20px;
+    margin: 0 auto;
+  }
+
+  /* ── HEADER ── */
+  #header {
+    text-align: center; margin-bottom: 8px;
+  }
+  #header h1 {
+    font-size: clamp(1.6rem, 5vw, 2.4rem);
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    background: linear-gradient(135deg, var(--accent) 0%, var(--accent3) 50%, var(--accent2) 100%);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  #header p {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.65rem;
+    color: var(--muted);
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    margin-top: 4px;
+  }
+
+  /* ── STATS ROW ── */
+  #stats {
+    display: flex; gap: 10px; margin-bottom: 14px; width: 100%;
+  }
+  .stat-card {
+    flex: 1; background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px; padding: 10px 12px;
+    text-align: center;
+    backdrop-filter: blur(12px);
+    transition: border-color 0.3s;
+  }
+  .stat-card:hover { border-color: rgba(255,255,255,0.16); }
+  .stat-val {
+    font-size: 1.5rem; font-weight: 800;
+    background: linear-gradient(135deg, var(--accent), var(--accent3));
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    background-clip: text;
+    display: block;
+  }
+  .stat-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.55rem; color: var(--muted);
+    text-transform: uppercase; letter-spacing: 0.15em;
+    display: block; margin-top: 2px;
+  }
+
+  /* ── XP BAR ── */
+  #xp-wrap {
+    width: 100%; margin-bottom: 14px;
+  }
+  #xp-header {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-bottom: 6px;
+  }
+  #level-label {
+    font-size: 0.72rem; font-weight: 700;
+    color: var(--accent);
+    font-family: 'JetBrains Mono', monospace;
+  }
+  #xp-label {
+    font-size: 0.62rem; color: var(--muted);
+    font-family: 'JetBrains Mono', monospace;
+  }
+  #xp-track {
+    width: 100%; height: 6px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 99px; overflow: hidden;
+  }
+  #xp-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--accent), var(--accent3));
+    border-radius: 99px;
+    transition: width 0.5s cubic-bezier(0.34,1.56,0.64,1);
+    box-shadow: 0 0 8px rgba(127,255,110,0.5);
+  }
+
+  /* ── MAIN BUTTON AREA ── */
+  #btn-arena {
+    width: 100%; display: flex; align-items: center;
+    justify-content: center; margin-bottom: 14px;
+    min-height: 160px; position: relative;
+  }
+  #do-nothing-btn {
+    width: 140px; height: 140px;
+    border-radius: 50%;
+    border: 2px solid var(--btn-color);
+    background: transparent;
+    color: var(--btn-color);
+    font-family: 'Syne', sans-serif;
+    font-size: 0.85rem;
+    font-weight: 800;
+    letter-spacing: 0.05em;
+    cursor: pointer;
+    position: relative;
+    transition: all 0.4s cubic-bezier(0.34,1.56,0.64,1);
+    box-shadow: 0 0 30px rgba(var(--particle-color),0.15), inset 0 0 30px rgba(var(--particle-color),0.05);
+    outline: none;
+    z-index: 2;
+  }
+  #do-nothing-btn::before {
+    content: '';
+    position: absolute; inset: -6px;
+    border-radius: inherit;
+    border: 1px solid rgba(var(--particle-color),0.2);
+    animation: pulse-ring 2s ease infinite;
+  }
+  #do-nothing-btn::after {
+    content: '';
+    position: absolute; inset: -14px;
+    border-radius: inherit;
+    border: 1px solid rgba(var(--particle-color),0.08);
+    animation: pulse-ring 2s ease infinite 0.4s;
+  }
+  @keyframes pulse-ring {
+    0% { transform: scale(1); opacity: 1; }
+    100% { transform: scale(1.15); opacity: 0; }
+  }
+  #do-nothing-btn:hover {
+    background: rgba(var(--particle-color),0.06);
+    transform: scale(1.05);
+    box-shadow: 0 0 50px rgba(var(--particle-color),0.3);
+  }
+  #do-nothing-btn:active {
+    transform: scale(0.94);
+  }
+  #do-nothing-btn.evolve { animation: evolve-bounce 0.5s cubic-bezier(0.34,1.56,0.64,1); }
+  @keyframes evolve-bounce {
+    0% { transform: scale(1); }
+    40% { transform: scale(1.3) rotate(15deg); }
+    70% { transform: scale(0.9) rotate(-5deg); }
+    100% { transform: scale(1) rotate(0deg); }
+  }
+  #do-nothing-btn.chaos-mode {
+    animation: chaos-float 1s ease infinite;
+  }
+  @keyframes chaos-float {
+    0%,100% { transform: translate(0,0) rotate(0deg); }
+    25% { transform: translate(8px,-5px) rotate(3deg); }
+    50% { transform: translate(-6px,4px) rotate(-2deg); }
+    75% { transform: translate(4px,6px) rotate(1deg); }
+  }
+  #btn-text { pointer-events: none; line-height: 1.3; }
+
+  /* ── MESSAGE ── */
+  #msg-box {
+    min-height: 50px; display: flex; align-items: center;
+    justify-content: center; text-align: center;
+    margin-bottom: 14px; padding: 0 10px;
+  }
+  #msg-text {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.78rem; color: var(--muted);
+    animation: msg-in 0.5s cubic-bezier(0.34,1.56,0.64,1);
+    letter-spacing: 0.02em;
+    line-height: 1.5;
+  }
+  @keyframes msg-in {
+    from { opacity: 0; transform: translateY(10px) scale(0.95); }
+    to   { opacity: 1; transform: translateY(0) scale(1); }
+  }
+  #msg-text.glitch {
+    animation: glitch 0.3s linear 3;
+  }
+  @keyframes glitch {
+    0%,100% { text-shadow: none; transform: none; }
+    20% { text-shadow: 2px 0 var(--accent2), -2px 0 var(--accent3); transform: skewX(5deg); }
+    40% { text-shadow: -2px 0 var(--accent2); transform: skewX(-3deg) translateX(2px); }
+    60% { text-shadow: 2px 0 var(--accent3); transform: none; }
+    80% { text-shadow: -1px 0 var(--accent2), 1px 0 var(--accent3); transform: skewX(2deg); }
+  }
+
+  /* ── STREAK ── */
+  #streak-bar {
+    display: flex; align-items: center; gap: 8px;
+    margin-bottom: 14px; width: 100%;
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 12px; padding: 8px 14px;
+    backdrop-filter: blur(8px);
+  }
+  #streak-fire { font-size: 1.2rem; animation: fire-pulse 1.5s ease infinite; }
+  @keyframes fire-pulse {
+    0%,100% { transform: scale(1); }
+    50% { transform: scale(1.15) rotate(3deg); }
+  }
+  #streak-text { font-size: 0.72rem; font-family: 'JetBrains Mono', monospace; }
+  #streak-num { color: var(--accent); font-weight: 700; }
+
+  /* ── TIMER ── */
+  #timer-line {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.62rem; color: var(--muted);
+    margin-bottom: 14px; letter-spacing: 0.1em;
+    text-align: center;
+  }
+
+  /* ── BOTTOM TABS ── */
+  #tabs {
+    display: flex; gap: 8px; margin-bottom: 14px; width: 100%;
+  }
+  .tab-btn {
+    flex: 1; padding: 8px 4px; border-radius: 10px;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    color: var(--muted);
+    font-family: 'Syne', sans-serif;
+    font-size: 0.7rem; font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    letter-spacing: 0.03em;
+  }
+  .tab-btn:hover { border-color: rgba(255,255,255,0.2); color: var(--text); }
+  .tab-btn.active { background: var(--accent); color: #000; border-color: var(--accent); }
+
+  /* ── PANELS ── */
+  .panel { display: none; width: 100%; }
+  .panel.active { display: block; animation: panel-in 0.3s ease; }
+  @keyframes panel-in {
+    from { opacity: 0; transform: translateY(8px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  /* ── ACHIEVEMENTS ── */
+  #achievements-grid {
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px;
+  }
+  .achievement {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px; padding: 12px 8px;
+    text-align: center;
+    backdrop-filter: blur(12px);
+    transition: all 0.3s;
+    position: relative; overflow: hidden;
+  }
+  .achievement.locked { opacity: 0.35; filter: grayscale(0.8); }
+  .achievement.unlocked {
+    border-color: rgba(127,255,110,0.3);
+    box-shadow: 0 0 20px rgba(127,255,110,0.08);
+  }
+  .achievement.unlocked::before {
+    content: '';
+    position: absolute; inset: 0;
+    background: linear-gradient(135deg, rgba(127,255,110,0.05) 0%, transparent 60%);
+    pointer-events: none;
+  }
+  .ach-icon { font-size: 1.6rem; display: block; margin-bottom: 4px; }
+  .ach-name { font-size: 0.58rem; font-weight: 700; color: var(--text); display: block; line-height: 1.3; }
+  .ach-req { font-size: 0.5rem; color: var(--muted); font-family: 'JetBrains Mono', monospace; display: block; margin-top: 2px; }
+  .achievement.just-unlocked { animation: unlock-pop 0.6s cubic-bezier(0.34,1.56,0.64,1); }
+  @keyframes unlock-pop {
+    0% { transform: scale(0.8); }
+    60% { transform: scale(1.15); }
+    100% { transform: scale(1); }
+  }
+
+  /* ── SETTINGS ── */
+  .setting-row {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 12px 14px; background: var(--surface);
+    border: 1px solid var(--border); border-radius: 12px;
+    margin-bottom: 8px; backdrop-filter: blur(8px);
+  }
+  .setting-label { font-size: 0.78rem; font-weight: 600; }
+  .setting-sub { font-size: 0.62rem; color: var(--muted); font-family: 'JetBrains Mono', monospace; display: block; }
+  .toggle {
+    width: 40px; height: 22px;
+    background: var(--border); border-radius: 99px;
+    cursor: pointer; position: relative; transition: background 0.3s;
+    border: none; outline: none; flex-shrink: 0;
+  }
+  .toggle::after {
+    content: ''; position: absolute; top: 3px; left: 3px;
+    width: 16px; height: 16px;
+    background: var(--muted); border-radius: 50%;
+    transition: all 0.3s cubic-bezier(0.34,1.56,0.64,1);
+  }
+  .toggle.on { background: var(--accent); }
+  .toggle.on::after { left: 21px; background: #000; }
+  .bg-modes { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 6px; }
+  .bg-pill {
+    padding: 4px 10px; border-radius: 99px;
+    border: 1px solid var(--border);
+    background: transparent; color: var(--muted);
+    font-size: 0.62rem; cursor: pointer;
+    font-family: 'JetBrains Mono', monospace;
+    transition: all 0.2s;
+  }
+  .bg-pill.active { background: var(--accent); color: #000; border-color: var(--accent); }
+  .share-btn {
+    width: 100%; padding: 12px;
+    background: linear-gradient(135deg, var(--accent), var(--accent3));
+    border: none; border-radius: 12px;
+    color: #000; font-family: 'Syne', sans-serif;
+    font-size: 0.82rem; font-weight: 800;
+    cursor: pointer; margin-top: 8px;
+    letter-spacing: 0.05em;
+    transition: all 0.3s;
+  }
+  .share-btn:hover { transform: scale(1.02); box-shadow: 0 6px 24px rgba(127,255,110,0.3); }
+  .share-btn:active { transform: scale(0.98); }
+
+  /* ── FAKE LOADER ── */
+  #fake-loader {
+    display: none; position: fixed; inset: 0; z-index: 100;
+    background: rgba(5,5,8,0.95); backdrop-filter: blur(20px);
+    flex-direction: column; align-items: center; justify-content: center;
+    font-family: 'JetBrains Mono', monospace;
+    padding: 40px;
+  }
+  #fake-loader.show { display: flex; animation: panel-in 0.4s ease; }
+  #loader-title {
+    font-size: 1.2rem; color: var(--accent3);
+    font-weight: 700; margin-bottom: 20px; text-align: center;
+    font-family: 'Syne', sans-serif;
+  }
+  #loader-log {
+    width: 100%; max-width: 400px; height: 160px; overflow: hidden;
+    font-size: 0.65rem; color: var(--muted);
+    display: flex; flex-direction: column; gap: 4px;
+    margin-bottom: 20px;
+  }
+  #loader-log p { animation: log-in 0.3s ease; }
+  @keyframes log-in {
+    from { opacity: 0; transform: translateX(-10px); }
+    to { opacity: 1; transform: translateX(0); }
+  }
+  #loader-bar-wrap {
+    width: 100%; max-width: 400px;
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 99px; height: 8px; overflow: hidden; margin-bottom: 12px;
+  }
+  #loader-bar {
+    height: 100%;
+    background: linear-gradient(90deg, var(--accent3), var(--accent));
+    border-radius: 99px; width: 0%; transition: width 2s ease;
+    box-shadow: 0 0 10px rgba(110,186,255,0.6);
+  }
+  #loader-pct { font-size: 0.7rem; color: var(--accent3); margin-bottom: 20px; }
+  #loader-close {
+    padding: 8px 24px; border-radius: 8px;
+    border: 1px solid var(--border); background: transparent;
+    color: var(--muted); font-family: 'JetBrains Mono', monospace;
+    font-size: 0.7rem; cursor: pointer;
+    transition: all 0.2s;
+  }
+  #loader-close:hover { border-color: var(--accent3); color: var(--accent3); }
+
+  /* ── EASTER EGG ── */
+  #easter-egg {
+    display: none; position: fixed; inset: 0; z-index: 200;
+    background: #000; flex-direction: column; align-items: center; justify-content: center;
+    font-family: 'Syne', sans-serif; text-align: center; padding: 40px;
+  }
+  #easter-egg.show { display: flex; animation: egg-in 0.8s cubic-bezier(0.34,1.56,0.64,1); }
+  @keyframes egg-in {
+    from { transform: scale(0); opacity: 0; }
+    to { transform: scale(1); opacity: 1; }
+  }
+  #egg-emoji { font-size: 5rem; animation: egg-spin 2s ease infinite; }
+  @keyframes egg-spin {
+    0%,100% { transform: rotate(0deg) scale(1); }
+    50% { transform: rotate(180deg) scale(1.1); }
+  }
+  #egg-title { font-size: 2rem; font-weight: 800; margin: 20px 0 10px; color: #fff; }
+  #egg-sub { color: var(--muted); font-size: 0.9rem; margin-bottom: 30px; font-family: 'JetBrains Mono', monospace; }
+  #egg-close {
+    padding: 10px 28px; border-radius: 10px;
+    border: 1px solid rgba(255,255,255,0.2);
+    background: transparent; color: #fff;
+    font-family: 'Syne', sans-serif; font-size: 0.82rem; font-weight: 700;
+    cursor: pointer;
+  }
+
+  /* ── TOAST ── */
+  #toast {
+    position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
+    background: var(--accent); color: #000;
+    padding: 10px 20px; border-radius: 99px;
+    font-size: 0.75rem; font-weight: 800;
+    font-family: 'Syne', sans-serif;
+    z-index: 300; pointer-events: none;
+    opacity: 0; transition: opacity 0.3s;
+    white-space: nowrap;
+    box-shadow: 0 4px 20px rgba(127,255,110,0.4);
+  }
+  #toast.show { opacity: 1; }
+
+  /* ── CLICK BURST ── */
+  .burst {
+    position: fixed; pointer-events: none; z-index: 500;
+    width: 6px; height: 6px; border-radius: 50%;
+    background: var(--accent);
+    animation: burst-anim 0.6s ease forwards;
+  }
+  @keyframes burst-anim {
+    0% { transform: translate(-50%,-50%) scale(0); opacity: 1; }
+    100% { transform: translate(-50%,-50%) scale(4); opacity: 0; }
+  }
+
+  /* ── MOUSE SPARKS ── */
+  .spark {
+    position: fixed;
+    pointer-events: none;
+    z-index: 520;
+    width: 9px;
+    height: 9px;
+    border-radius: 50%;
+    background: var(--accent);
+    box-shadow: 0 0 20px currentColor;
+    animation: spark-fade 0.55s ease-out forwards;
+  }
+  @keyframes spark-fade {
+    0% { transform: translate(-50%, -50%) scale(1.2); opacity: 0.98; }
+    100% { transform: translate(-50%, -50%) scale(0.25) translateY(-14px); opacity: 0; }
+  }
+
+  /* Mode: ocean */
+  body.ocean-mode { background: #020f18; }
+  body.ocean-mode { --particle-color: 110, 186, 255; --btn-color: #6ebaff; --accent: #6ebaff; }
+  /* Mode: neon */
+  body.neon-mode { background: #0a0014; }
+  body.neon-mode { --particle-color: 255, 110, 240; --btn-color: #ff6ef0; --accent: #ff6ef0; }
+  /* Mode: minimal */
+  body.minimal-mode { background: #000; }
+  body.minimal-mode { --particle-color: 255, 255, 255; --btn-color: #fff; --accent: #fff; }
+  /* Mode: matrix */
+  body.matrix-mode { background: #000800; }
+  body.matrix-mode { --particle-color: 0, 255, 70; --btn-color: #00ff46; --accent: #00ff46; }
+
+  /* Scrollable content in panels */
+  .panel-inner { max-height: min(360px, 45vh); overflow-y: auto; }
+  .panel-inner::-webkit-scrollbar { width: 3px; }
+  .panel-inner::-webkit-scrollbar-track { background: transparent; }
+  .panel-inner::-webkit-scrollbar-thumb { background: var(--border); border-radius: 99px; }
+
+  #ach-panel { width: 100%; }
+
+  @media (max-height: 760px) {
+    body { justify-content: flex-start; }
+    #btn-arena { min-height: 136px; }
+    #do-nothing-btn { width: 124px; height: 124px; }
+  }
+</style>
+</head>
+<body>
+<canvas id="bgCanvas"></canvas>
+
+<div id="app">
+  <div id="header">
+    <h1>DO NOTHING</h1>
+    <p>The world's most purposeless app</p>
+  </div>
+
+  <div id="stats">
+    <div class="stat-card">
+      <span class="stat-val" id="tap-count">0</span>
+      <span class="stat-label">Nothings</span>
+    </div>
+    <div class="stat-card">
+      <span class="stat-val" id="session-count">0</span>
+      <span class="stat-label">Sessions</span>
+    </div>
+    <div class="stat-card">
+      <span class="stat-val" id="total-count">0</span>
+      <span class="stat-label">All Time</span>
+    </div>
+  </div>
+
+  <div id="xp-wrap">
+    <div id="xp-header">
+      <span id="level-label">Level 1 — Beginner of Nothing</span>
+      <span id="xp-label">0 / 25 XP</span>
+    </div>
+    <div id="xp-track"><div id="xp-fill" style="width:0%"></div></div>
+  </div>
+
+  <div id="streak-bar">
+    <span id="streak-fire">🔥</span>
+    <span id="streak-text">
+      <span id="streak-num">0</span> day nothing streak
+      <span style="color:var(--muted);font-size:0.6rem"> — keep doing nothing</span>
+    </span>
+  </div>
+
+  <div id="btn-arena">
+    <button id="do-nothing-btn"><span id="btn-text">DO<br>NOTHING</span></button>
+  </div>
+
+  <div id="msg-box">
+    <span id="msg-text">Press the button to begin doing nothing.</span>
+  </div>
+
+  <div id="timer-line">⏱ Session time: <span id="session-time">0:00</span> — You've spent this long doing absolutely nothing.</div>
+
+  <div id="tabs">
+    <button class="tab-btn active" onclick="switchTab('main-panel',this)">🏠 Main</button>
+    <button class="tab-btn" onclick="switchTab('ach-panel',this)">🏆 Badges</button>
+    <button class="tab-btn" onclick="switchTab('settings-panel',this)">⚙️ Settings</button>
+  </div>
+
+  <div id="main-panel" class="panel active">
+    <!-- main content shown above -->
+    <div style="font-family:'JetBrains Mono',monospace;font-size:0.65rem;color:var(--muted);text-align:center;padding:8px;background:var(--surface);border:1px solid var(--border);border-radius:12px;">
+      <div id="reverse-indicator" style="display:none;color:#ff6ef0;margin-bottom:4px;">⟲ REVERSE MODE ACTIVE — every tap undoes nothing</div>
+      <div id="chaos-indicator" style="display:none;color:#ff6ef0;margin-bottom:4px;">⚡ CHAOS MODE ACTIVE</div>
+      Tap 50× to unlock Quantum Mode · Tap 100× fast for Easter Egg
+    </div>
+  </div>
+
+  <div id="ach-panel" class="panel">
+    <div class="panel-inner">
+      <div id="achievements-grid"></div>
+    </div>
+  </div>
+
+  <div id="settings-panel" class="panel">
+    <div class="panel-inner">
+      <div class="setting-row">
+        <div>
+          <span class="setting-label">🎵 Sound Effects</span>
+          <span class="setting-sub">Toggle all button sounds</span>
+        </div>
+        <button class="toggle" id="sound-toggle" onclick="toggleSetting('sound')"></button>
+      </div>
+      <div class="setting-row" style="flex-direction:column;align-items:flex-start;gap:8px;">
+        <span class="setting-label">🔊 Sound Pack</span>
+        <div class="bg-modes" id="sound-modes">
+          <button class="bg-pill" onclick="setSoundMode('click',this)">Click</button>
+          <button class="bg-pill" onclick="setSoundMode('pop',this)">Pop</button>
+          <button class="bg-pill" onclick="setSoundMode('laser',this)">Laser</button>
+          <button class="bg-pill" onclick="setSoundMode('retro',this)">Retro</button>
+          <button class="bg-pill" onclick="setSoundMode('bubble',this)">Bubble</button>
+        </div>
+      </div>
+      <div class="setting-row">
+        <div>
+          <span class="setting-label">⚡ Chaos Mode</span>
+          <span class="setting-sub">Button moves, screen shakes</span>
+        </div>
+        <button class="toggle" id="chaos-toggle" onclick="toggleSetting('chaos')"></button>
+      </div>
+      <div class="setting-row">
+        <div>
+          <span class="setting-label">⟲ Reverse Mode</span>
+          <span class="setting-sub">Each tap undoes nothing</span>
+        </div>
+        <button class="toggle" id="reverse-toggle" onclick="toggleSetting('reverse')"></button>
+      </div>
+      <div class="setting-row" style="flex-direction:column;align-items:flex-start;gap:8px;">
+        <span class="setting-label">🎨 Background Mode</span>
+        <div class="bg-modes">
+          <button class="bg-pill active" onclick="setBgMode('space',this)">🌌 Space</button>
+          <button class="bg-pill" onclick="setBgMode('ocean',this)">🌊 Ocean</button>
+          <button class="bg-pill" onclick="setBgMode('matrix',this)">🧠 Matrix</button>
+          <button class="bg-pill" onclick="setBgMode('neon',this)">🌈 Neon</button>
+          <button class="bg-pill" onclick="setBgMode('minimal',this)">⚫ Minimal</button>
+        </div>
+      </div>
+      <button class="share-btn" onclick="shareNothing()">📤 Share Nothing</button>
+    </div>
+  </div>
+</div>
+
+<!-- Fake Loader -->
+<div id="fake-loader">
+  <div id="loader-title">⚛️ Quantum Processing Mode</div>
+  <div id="loader-log"></div>
+  <div id="loader-bar-wrap"><div id="loader-bar"></div></div>
+  <div id="loader-pct">Loading: 99%...</div>
+  <button id="loader-close" onclick="document.getElementById('fake-loader').classList.remove('show')">Exit Void</button>
+</div>
+
+<!-- Easter Egg -->
+<div id="easter-egg">
+  <span id="egg-emoji">💀</span>
+  <div id="egg-title">You broke nothing.</div>
+  <div id="egg-sub">100 taps. You actually did it.<br>This is the most nothing ever achieved.</div>
+  <button id="egg-close" onclick="document.getElementById('easter-egg').classList.remove('show')">Return to Nothing</button>
+</div>
+
+<!-- Toast -->
+<div id="toast"></div>
+
+<script>
+// ── STATE ──
+const state = {
+  taps: parseInt(localStorage.getItem('taps') || '0'),
+  totalTaps: parseInt(localStorage.getItem('totalTaps') || '0'),
+  sessions: parseInt(localStorage.getItem('sessions') || '0') + 1,
+  streak: parseInt(localStorage.getItem('streak') || '0'),
+  lastDate: localStorage.getItem('lastDate') || '',
+  sound: localStorage.getItem('sound') === '1',
+  soundMode: localStorage.getItem('soundMode') || 'click',
+  chaos: localStorage.getItem('chaos') === '1',
+  reverse: localStorage.getItem('reverse') === '1',
+  bgMode: localStorage.getItem('bgMode') || 'space',
+  achievements: JSON.parse(localStorage.getItem('achievements') || '[]'),
+  easterEggFast: 0,
+  easterEggTimer: null,
+  sessionStart: Date.now(),
+};
+
+// ── SAVE ──
+function save() {
+  localStorage.setItem('taps', state.taps);
+  localStorage.setItem('totalTaps', state.totalTaps);
+  localStorage.setItem('sessions', state.sessions);
+  localStorage.setItem('streak', state.streak);
+  localStorage.setItem('lastDate', state.lastDate);
+  localStorage.setItem('achievements', JSON.stringify(state.achievements));
+  localStorage.setItem('sound', state.sound ? '1' : '0');
+  localStorage.setItem('soundMode', state.soundMode);
+  localStorage.setItem('chaos', state.chaos ? '1' : '0');
+  localStorage.setItem('reverse', state.reverse ? '1' : '0');
+  localStorage.setItem('bgMode', state.bgMode);
+}
+
+// ── STREAK ──
+function checkStreak() {
+  const today = new Date().toDateString();
+  if (state.lastDate === today) return;
+  const yesterday = new Date(Date.now() - 86400000).toDateString();
+  if (state.lastDate === yesterday) state.streak++;
+  else state.streak = 1;
+  state.lastDate = today;
+}
+checkStreak();
+save();
+
+// ── QUOTES ──
+const quotes = [
+  "Nothing is still something.",
+  "You chose this.",
+  "This is peak productivity.",
+  "Time is passing.",
+  "Your battery is decreasing.",
+  "The void stares back.",
+  "Aristotle did not account for this.",
+  "You are one with the nothing.",
+  "Highly efficient. Zero output.",
+  "NASA has your data.",
+  "Your ancestors survived for this moment.",
+  "Loading purpose... failed.",
+  "A wise person once said: nothing.",
+  "You are undoing nothing.",
+  "The universe approves.",
+  "This counts as mindfulness.",
+  "Philosophy can't save you now.",
+  "Keep doing nothing.",
+  "Certified void behaviour.",
+  "You're very good at this.",
+  "Nothing has never looked better.",
+  "Silence is your KPI.",
+  "You tapped. Nothing changed.",
+  "This is your legacy.",
+  "Even the clock is confused.",
+  "Minimal effort detected.",
+  "Still no deliverables.",
+  "You unlocked advanced idling.",
+  "The void sent a thank you note.",
+  "Nothing level increased.",
+  "No bugs. No features. Perfect.",
+  "You are aggressively relaxing.",
+  "Existence acknowledged your tap.",
+  "This meeting could've been an email.",
+  "No thoughts, just taps.",
+  "Purpose remains unavailable.",
+  "Productivity is taking a nap.",
+  "You did less. Impressive.",
+  "A masterpiece of inactivity.",
+  "Progress: emotionally unclear.",
+  "You pressed the anti-button.",
+  "The universe buffered your nothing.",
+  "Doing nothing, but in HD.",
+  "Still no roadmap required.",
+  "You have become idle legend.",
+  "Nothing is trending upward.",
+  "Tap received. Meaning not found.",
+  "The algorithm approves your stillness.",
+  "You are farming pure calm.",
+  "This is intentional emptiness.",
+];
+let lastQuoteIdx = -1;
+function getQuote() {
+  let idx;
+  do { idx = Math.floor(Math.random() * quotes.length); } while (idx === lastQuoteIdx);
+  lastQuoteIdx = idx;
+  return quotes[idx];
+}
+
+// ── LEVELS ──
+const levels = [
+  [0,'Beginner of Nothing'], [5,'Casual Idler'], [10,'Skilled Idler'],
+  [20,'Void Apprentice'], [40,'Procrastination Pro'], [75,'Zen Wanderer'],
+  [100,'Void Architect'], [150,'Supreme Nothingness'], [200,'God of Nothing'],
+];
+function getLevel(taps) {
+  let l = levels[0];
+  for (const lv of levels) { if (taps >= lv[0]) l = lv; else break; }
+  return l;
+}
+
+// ── ACHIEVEMENTS ──
+const achDefs = [
+  { id:'first', icon:'🥉', name:'First Nothing', req:'Tap once', check: t => t >= 1 },
+  { id:'ten',   icon:'🥈', name:'10× Nothing',   req:'10 taps',  check: t => t >= 10 },
+  { id:'fifty', icon:'🥇', name:'50× Nothing',   req:'50 taps',  check: t => t >= 50 },
+  { id:'hun',   icon:'💯', name:'100× Nothing',  req:'100 taps', check: t => t >= 100 },
+  { id:'zen',   icon:'🧘', name:'Zen Master',    req:'25 taps',  check: t => t >= 25 },
+  { id:'pro',   icon:'🗿', name:'Pro Procrastinator', req:'75 taps', check: t => t >= 75 },
+  { id:'void',  icon:'🌀', name:'Void Champion', req:'200 taps', check: t => t >= 200 },
+  { id:'time',  icon:'⏳', name:'5 Min Nothing', req:'5 min session', check: () => (Date.now() - state.sessionStart) > 300000 },
+  { id:'quantum',icon:'⚛️',name:'Quantum Tapper',req:'Unlock Quantum Mode',check: t => t >= 50 },
+];
+function renderAchievements() {
+  const grid = document.getElementById('achievements-grid');
+  grid.innerHTML = '';
+  achDefs.forEach(a => {
+    const unlocked = state.achievements.includes(a.id);
+    const el = document.createElement('div');
+    el.className = 'achievement' + (unlocked ? ' unlocked' : ' locked');
+    el.id = 'ach-' + a.id;
+    el.innerHTML = `<span class="ach-icon">${a.icon}</span><span class="ach-name">${a.name}</span><span class="ach-req">${a.req}</span>`;
+    grid.appendChild(el);
+  });
+}
+function checkAchievements() {
+  achDefs.forEach(a => {
+    if (!state.achievements.includes(a.id) && a.check(state.totalTaps)) {
+      state.achievements.push(a.id);
+      showToast(a.icon + ' Badge: ' + a.name);
+      const el = document.getElementById('ach-' + a.id);
+      if (el) { el.classList.remove('locked'); el.classList.add('unlocked','just-unlocked'); setTimeout(()=>el.classList.remove('just-unlocked'),600); }
+      save();
+    }
+  });
+}
+
+// ── UI UPDATE ──
+function updateUI() {
+  document.getElementById('tap-count').textContent = state.taps;
+  document.getElementById('session-count').textContent = state.sessions;
+  document.getElementById('total-count').textContent = state.totalTaps;
+  document.getElementById('streak-num').textContent = state.streak;
+
+  // XP / Level
+  const lv = getLevel(state.totalTaps);
+  const lvIdx = levels.indexOf(lv);
+  const nextLv = levels[lvIdx + 1];
+  const xpMin = lv[0], xpMax = nextLv ? nextLv[0] : xpMin + 50;
+  const xp = state.totalTaps - xpMin;
+  const xpRange = xpMax - xpMin;
+  const pct = Math.min(100, Math.round(xp / xpRange * 100));
+  document.getElementById('level-label').textContent = `Level ${lvIdx + 1} — ${lv[1]}`;
+  document.getElementById('xp-label').textContent = `${xp} / ${xpRange} XP`;
+  document.getElementById('xp-fill').style.width = pct + '%';
+
+  // Button evolution
+  updateButton();
+}
+
+// ── BUTTON EVOLUTION ──
+const btnColors = ['#7fff6e','#6ebaff','#ff6ef0','#ffe06e','#ff9a6e','#6effd4'];
+const btnShapes = ['50%','30%','20%','40% 60%','60% 40%','50% 30% 70% 50%'];
+function updateButton() {
+  const btn = document.getElementById('do-nothing-btn');
+  const stage = Math.floor(state.taps / 20);
+  const color = btnColors[stage % btnColors.length];
+  const shape = btnShapes[stage % btnShapes.length];
+  const size = 140 + Math.sin(stage * 0.8) * 30;
+  btn.style.width = size + 'px';
+  btn.style.height = size + 'px';
+  btn.style.borderRadius = shape;
+  btn.style.borderColor = color;
+  btn.style.color = color;
+  btn.style.boxShadow = `0 0 30px ${color}30, inset 0 0 30px ${color}08`;
+  document.documentElement.style.setProperty('--btn-color', color);
+}
+
+// ── BACKGROUND CANVAS ──
+const canvas = document.getElementById('bgCanvas');
+const ctx = canvas.getContext('2d');
+let particles = [], matrixCols = [], matrixDrops = [];
+let animFrame;
+
+function initParticles() {
+  canvas.width = window.innerWidth; canvas.height = window.innerHeight;
+  particles = [];
+  const count = state.bgMode === 'minimal' ? 0 : 60;
+  for (let i = 0; i < count; i++) particles.push(newParticle(true));
+  if (state.bgMode === 'matrix') initMatrix();
+}
+function newParticle(random) {
+  const s = state.bgMode;
+  return {
+    x: Math.random() * canvas.width,
+    y: random ? Math.random() * canvas.height : canvas.height + 10,
+    r: Math.random() * 2 + 0.5,
+    vx: (Math.random() - 0.5) * (s === 'ocean' ? 0.3 : 0.6),
+    vy: s === 'ocean' ? -0.2 - Math.random() * 0.3 : -0.3 - Math.random() * 0.5,
+    alpha: Math.random() * 0.6 + 0.2,
+    wave: Math.random() * Math.PI * 2,
+  };
+}
+function initMatrix() {
+  const cols = Math.floor(canvas.width / 14);
+  matrixDrops = Array.from({length: cols}, () => Math.random() * -canvas.height);
+}
+
+function drawBg() {
+  const mode = state.bgMode;
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  if (mode === 'ocean') {
+    // Wave layers
+    const t = Date.now() * 0.001;
+    for (let w = 0; w < 3; w++) {
+      ctx.beginPath();
+      ctx.moveTo(0, canvas.height);
+      for (let x = 0; x <= canvas.width; x += 10) {
+        const y = canvas.height * 0.7 + Math.sin(x * 0.008 + t + w * 2) * (20 + w * 10);
+        ctx.lineTo(x, y);
+      }
+      ctx.lineTo(canvas.width, canvas.height);
+      ctx.closePath();
+      ctx.fillStyle = `rgba(0, 60, 120, ${0.06 + w * 0.04})`;
+      ctx.fill();
+    }
+  }
+
+  if (mode === 'matrix') {
+    ctx.fillStyle = 'rgba(0,8,0,0.05)';
+    ctx.fillRect(0,0,canvas.width,canvas.height);
+    ctx.fillStyle = '#00ff46';
+    ctx.font = '12px JetBrains Mono';
+    const cols = Math.floor(canvas.width / 14);
+    for (let i = 0; i < cols; i++) {
+      const char = String.fromCharCode(0x30A0 + Math.random() * 96);
+      ctx.globalAlpha = 0.35 + Math.random() * 0.2;
+      ctx.fillText(char, i * 14, matrixDrops[i]);
+      if (matrixDrops[i] > canvas.height && Math.random() > 0.975) matrixDrops[i] = 0;
+      matrixDrops[i] += 14;
+    }
+    ctx.globalAlpha = 1;
+    return;
+  }
+
+  if (mode === 'neon') {
+    // Neon grid
+    ctx.strokeStyle = 'rgba(255,110,240,0.04)';
+    ctx.lineWidth = 1;
+    for (let x = 0; x < canvas.width; x += 40) { ctx.beginPath(); ctx.moveTo(x,0); ctx.lineTo(x,canvas.height); ctx.stroke(); }
+    for (let y = 0; y < canvas.height; y += 40) { ctx.beginPath(); ctx.moveTo(0,y); ctx.lineTo(canvas.width,y); ctx.stroke(); }
+  }
+
+  if (mode === 'minimal') return;
+
+  // Particles
+  const t = Date.now() * 0.001;
+  const [r,g,b] = mode === 'space' ? [127,255,110] : mode === 'ocean' ? [110,186,255] : mode === 'neon' ? [255,110,240] : [255,255,255];
+  particles.forEach((p, i) => {
+    p.wave += 0.01;
+    p.x += p.vx + Math.sin(p.wave) * (mode === 'ocean' ? 0.4 : 0.2);
+    p.y += p.vy;
+    if (mode === 'ocean') p.vy = -0.2 - Math.sin(p.wave * 0.5) * 0.1;
+
+    if (p.y < -10 || p.x < -10 || p.x > canvas.width + 10) {
+      particles[i] = newParticle(false);
+      return;
+    }
+    ctx.beginPath();
+    ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+    ctx.fillStyle = `rgba(${r},${g},${b},${p.alpha})`;
+    ctx.fill();
+    // Soft glow
+    ctx.beginPath();
+    ctx.arc(p.x, p.y, p.r * 3, 0, Math.PI * 2);
+    ctx.fillStyle = `rgba(${r},${g},${b},${p.alpha * 0.1})`;
+    ctx.fill();
+  });
+}
+
+function animate() { drawBg(); animFrame = requestAnimationFrame(animate); }
+window.addEventListener('resize', initParticles);
+initParticles(); animate();
+
+// ── TAP HANDLER ──
+const btn = document.getElementById('do-nothing-btn');
+btn.addEventListener('click', function(e) {
+  if (state.reverse) {
+    state.taps = Math.max(0, state.taps - 1);
+    state.totalTaps = Math.max(0, state.totalTaps - 1);
+    setMsg('You are undoing nothing.', true);
+  } else {
+    state.taps++;
+    state.totalTaps++;
+    setMsg(getQuote());
+  }
+
+  // Easter egg fast tap
+  state.easterEggFast++;
+  clearTimeout(state.easterEggTimer);
+  state.easterEggTimer = setTimeout(() => state.easterEggFast = 0, 3000);
+  if (state.easterEggFast >= 100) { state.easterEggFast = 0; showEasterEgg(); }
+
+  // Fake loader at 50
+  if (state.taps === 50) showFakeLoader();
+
+  // Chaos
+  if (state.chaos) {
+    document.body.classList.add('shake');
+    setTimeout(() => document.body.classList.remove('shake'), 400);
+    // move btn randomly
+    const arena = document.getElementById('btn-arena');
+    const mx = (Math.random() - 0.5) * 80, my = (Math.random() - 0.5) * 40;
+    btn.style.transform = `translate(${mx}px,${my}px)`;
+    setTimeout(() => btn.style.transform = '', 300);
+  }
+
+  // Evolve every 20 taps
+  if (state.taps % 20 === 0) {
+    btn.classList.add('evolve');
+    setTimeout(() => btn.classList.remove('evolve'), 500);
+    showToast('🌀 Button Evolved!');
+  }
+
+  // Sound
+  if (state.sound) playClick();
+
+  // Burst
+  createBurst(e.clientX, e.clientY);
+
+  save(); updateUI(); checkAchievements(); renderAchievements();
+});
+
+// ── CLICK BURST ──
+function createBurst(x, y) {
+  for (let i = 0; i < 5; i++) {
+    const el = document.createElement('div');
+    el.className = 'burst';
+    el.style.left = x + 'px'; el.style.top = y + 'px';
+    const angle = (i / 5) * Math.PI * 2;
+    const dist = 20 + Math.random() * 20;
+    el.style.transform = `translate(calc(-50% + ${Math.cos(angle)*dist}px), calc(-50% + ${Math.sin(angle)*dist}px))`;
+    el.style.background = getComputedStyle(document.documentElement).getPropertyValue('--btn-color') || '#7fff6e';
+    document.body.appendChild(el);
+    setTimeout(() => el.remove(), 600);
+  }
+}
+
+// ── MOUSE SPARKS ──
+let lastSparkAt = 0;
+function createSpark(x, y) {
+  const spark = document.createElement('div');
+  spark.className = 'spark';
+  spark.style.left = x + 'px';
+  spark.style.top = y + 'px';
+  spark.style.color = getComputedStyle(document.documentElement).getPropertyValue('--btn-color') || '#7fff6e';
+  document.body.appendChild(spark);
+  setTimeout(() => spark.remove(), 560);
+}
+
+window.addEventListener('mousemove', (e) => {
+  const now = Date.now();
+  if (now - lastSparkAt < 20) return;
+  lastSparkAt = now;
+
+  createSpark(e.clientX, e.clientY);
+  if (Math.random() > 0.6) {
+    createSpark(e.clientX + (Math.random() - 0.5) * 18, e.clientY + (Math.random() - 0.5) * 18);
+  }
+});
+
+// ── MSG ──
+function setMsg(text, glitch) {
+  const el = document.getElementById('msg-text');
+  el.textContent = text;
+  el.style.animation = 'none';
+  el.offsetHeight;
+  el.style.animation = '';
+  if (glitch && state.chaos) {
+    el.classList.add('glitch');
+    setTimeout(() => el.classList.remove('glitch'), 1000);
+  }
+}
+
+// ── SOUND ──
+let audioCtx;
+function playClick() {
+  try {
+    if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    const t = audioCtx.currentTime;
+    const osc = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
+    osc.connect(gain);
+    gain.connect(audioCtx.destination);
+
+    if (state.soundMode === 'click') {
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(420 + Math.random() * 180, t);
+      osc.frequency.exponentialRampToValueAtTime(220, t + 0.14);
+      gain.gain.setValueAtTime(0.09, t);
+      gain.gain.exponentialRampToValueAtTime(0.001, t + 0.15);
+      osc.start(t);
+      osc.stop(t + 0.15);
+      return;
+    }
+
+    if (state.soundMode === 'pop') {
+      osc.type = 'triangle';
+      osc.frequency.setValueAtTime(200 + Math.random() * 80, t);
+      osc.frequency.exponentialRampToValueAtTime(70, t + 0.09);
+      gain.gain.setValueAtTime(0.12, t);
+      gain.gain.exponentialRampToValueAtTime(0.001, t + 0.1);
+      osc.start(t);
+      osc.stop(t + 0.1);
+      return;
+    }
+
+    if (state.soundMode === 'laser') {
+      osc.type = 'sawtooth';
+      osc.frequency.setValueAtTime(1100 + Math.random() * 350, t);
+      osc.frequency.exponentialRampToValueAtTime(180, t + 0.18);
+      gain.gain.setValueAtTime(0.08, t);
+      gain.gain.exponentialRampToValueAtTime(0.001, t + 0.19);
+      osc.start(t);
+      osc.stop(t + 0.19);
+      return;
+    }
+
+    if (state.soundMode === 'retro') {
+      osc.type = 'square';
+      osc.frequency.setValueAtTime(280 + Math.random() * 120, t);
+      osc.frequency.linearRampToValueAtTime(560, t + 0.04);
+      osc.frequency.linearRampToValueAtTime(180, t + 0.12);
+      gain.gain.setValueAtTime(0.09, t);
+      gain.gain.exponentialRampToValueAtTime(0.001, t + 0.13);
+      osc.start(t);
+      osc.stop(t + 0.13);
+      return;
+    }
+
+    // bubble
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(190 + Math.random() * 90, t);
+    osc.frequency.exponentialRampToValueAtTime(420, t + 0.07);
+    osc.frequency.exponentialRampToValueAtTime(130, t + 0.16);
+    gain.gain.setValueAtTime(0.1, t);
+    gain.gain.exponentialRampToValueAtTime(0.001, t + 0.17);
+    osc.start(t);
+    osc.stop(t + 0.17);
+  } catch(e) {}
+}
+
+// ── TOAST ──
+let toastTimer;
+function showToast(msg) {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => el.classList.remove('show'), 2500);
+}
+
+// ── TABS ──
+function switchTab(panelId, tabEl) {
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(t => t.classList.remove('active'));
+  document.getElementById(panelId).classList.add('active');
+  tabEl.classList.add('active');
+}
+
+// ── SETTINGS ──
+function toggleSetting(key) {
+  state[key] = !state[key];
+  const btn = document.getElementById(key + '-toggle');
+  btn.classList.toggle('on', state[key]);
+  if (key === 'chaos') {
+    document.getElementById('do-nothing-btn').classList.toggle('chaos-mode', state.chaos);
+    document.getElementById('chaos-indicator').style.display = state.chaos ? 'block' : 'none';
+  }
+  if (key === 'reverse') {
+    document.getElementById('reverse-indicator').style.display = state.reverse ? 'block' : 'none';
+  }
+  save();
+}
+
+function setSoundMode(mode, el) {
+  state.soundMode = mode;
+  document.querySelectorAll('#sound-modes .bg-pill').forEach(p => p.classList.remove('active'));
+  el.classList.add('active');
+  save();
+  if (state.sound) playClick();
+}
+
+function setBgMode(mode, el) {
+  state.bgMode = mode;
+  document.querySelectorAll('.bg-pill').forEach(p => p.classList.remove('active'));
+  el.classList.add('active');
+  document.body.className = mode !== 'space' ? mode + '-mode' : '';
+  initParticles();
+  save();
+}
+
+// ── TIMER ──
+function updateTimer() {
+  const elapsed = Math.floor((Date.now() - state.sessionStart) / 1000);
+  const m = Math.floor(elapsed / 60), s = elapsed % 60;
+  document.getElementById('session-time').textContent = m + ':' + String(s).padStart(2, '0');
+}
+setInterval(updateTimer, 1000);
+
+// ── FAKE LOADER ──
+const loaderLogs = [
+  '> Initializing void matrix...',
+  '> Calibrating nothingness... ✓',
+  '> Loading existential framework...',
+  '> Connecting to void server...',
+  '> AI model: "I don\'t understand this"',
+  '> Quantum processing enabled...',
+  '> NULL pointer detected (intentional)',
+  '> Calculating the weight of nothing...',
+  '> Loading 99%...',
+  '> Finalizing... [STALLED]',
+];
+function showFakeLoader() {
+  const loader = document.getElementById('fake-loader');
+  const log = document.getElementById('loader-log');
+  const bar = document.getElementById('loader-bar');
+  loader.classList.add('show');
+  log.innerHTML = '';
+  bar.style.width = '0%';
+  let i = 0;
+  const interval = setInterval(() => {
+    if (i >= loaderLogs.length) { clearInterval(interval); return; }
+    const p = document.createElement('p');
+    p.style.color = i === loaderLogs.length - 1 ? '#ff6ef0' : '';
+    p.textContent = loaderLogs[i];
+    log.appendChild(p);
+    log.scrollTop = log.scrollHeight;
+    bar.style.width = Math.min(99, (i + 1) / loaderLogs.length * 100) + '%';
+    i++;
+  }, 400);
+}
+
+// ── EASTER EGG ──
+function showEasterEgg() {
+  document.getElementById('easter-egg').classList.add('show');
+  if (state.sound) {
+    for (let i = 0; i < 5; i++) setTimeout(playClick, i * 100);
+  }
+}
+
+// ── SHARE ──
+function shareNothing() {
+  const text = `I've done nothing ${state.totalTaps} times on the Do Nothing App 🌀\nStreak: ${state.streak} days 🔥\nLevel: ${getLevel(state.totalTaps)[1]}\n\n#DoNothing #Productivity`;
+  if (navigator.share) {
+    navigator.share({ title: 'Do Nothing', text }).catch(() => {});
+  } else {
+    navigator.clipboard.writeText(text).then(() => showToast('📋 Copied to clipboard!'));
+  }
+}
+
+// ── INIT ──
+updateUI();
+renderAchievements();
+checkAchievements();
+
+// Apply saved toggles/sound mode
+document.getElementById('sound-toggle').classList.toggle('on', state.sound);
+document.getElementById('chaos-toggle').classList.toggle('on', state.chaos);
+document.getElementById('reverse-toggle').classList.toggle('on', state.reverse);
+document.getElementById('do-nothing-btn').classList.toggle('chaos-mode', state.chaos);
+document.getElementById('chaos-indicator').style.display = state.chaos ? 'block' : 'none';
+document.getElementById('reverse-indicator').style.display = state.reverse ? 'block' : 'none';
+document.querySelectorAll('#sound-modes .bg-pill').forEach((pill) => {
+  pill.classList.toggle('active', pill.textContent.toLowerCase() === state.soundMode);
+});
+
+// Apply saved bg mode
+if (state.bgMode !== 'space') {
+  document.body.className = state.bgMode + '-mode';
+  document.querySelector(`.bg-pill[onclick*="${state.bgMode}"]`)?.classList.add('active');
+  document.querySelector(`.bg-pill[onclick*="space"]`)?.classList.remove('active');
+  initParticles();
+}
+</script>
+</body>
+</html>
