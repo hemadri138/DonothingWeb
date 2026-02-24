@@ -3,6 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="icon" type="image/png" href="/favicon.png">
 <title>Do Nothing — The App</title>
 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet">
 <style>
@@ -358,12 +359,192 @@
     border: none; border-radius: 12px;
     color: #000; font-family: 'Syne', sans-serif;
     font-size: 0.82rem; font-weight: 800;
-    cursor: pointer; margin-top: 8px;
+    cursor: pointer; margin-top: 8px; margin-bottom: 28px;
     letter-spacing: 0.05em;
     transition: all 0.3s;
   }
   .share-btn:hover { transform: scale(1.02); box-shadow: 0 6px 24px rgba(127,255,110,0.3); }
   .share-btn:active { transform: scale(0.98); }
+
+  #energy-wrap {
+    width: 100%;
+    margin-bottom: 12px;
+    padding: 10px 12px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+  }
+  #energy-head {
+    display: flex;
+    justify-content: space-between;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.62rem;
+    color: var(--muted);
+    margin-bottom: 6px;
+  }
+  #energy-track {
+    width: 100%;
+    height: 8px;
+    border-radius: 999px;
+    background: rgba(255,255,255,0.05);
+    overflow: hidden;
+    border: 1px solid var(--border);
+  }
+  #energy-fill {
+    width: 0%;
+    height: 100%;
+    background: linear-gradient(90deg, var(--accent), var(--accent2));
+    box-shadow: 0 0 18px rgba(127,255,110,0.55);
+    transition: width 0.2s ease;
+  }
+  #combo-pop {
+    position: fixed;
+    left: 50%;
+    top: 45%;
+    transform: translate(-50%, -50%) scale(0.6);
+    font-family: 'Syne', sans-serif;
+    font-weight: 800;
+    letter-spacing: 0.05em;
+    font-size: 2rem;
+    color: var(--accent);
+    text-shadow: 0 0 24px rgba(127,255,110,0.45);
+    opacity: 0;
+    pointer-events: none;
+    z-index: 550;
+  }
+  #combo-pop.show { animation: combo-pop 0.55s cubic-bezier(0.34,1.56,0.64,1); }
+  @keyframes combo-pop {
+    0% { opacity: 0; transform: translate(-50%, -50%) scale(0.6); }
+    20% { opacity: 1; }
+    100% { opacity: 0; transform: translate(-50%, -58%) scale(1.16); }
+  }
+  #scanner-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
+    margin-top: 10px;
+  }
+  .scan-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 10px;
+    text-align: center;
+  }
+  .scan-circle {
+    width: 68px;
+    height: 68px;
+    margin: 0 auto 6px;
+    border-radius: 50%;
+    border: 1px solid var(--border);
+    background:
+      radial-gradient(circle at center, rgba(255,255,255,0.02) 0 52%, transparent 53%),
+      conic-gradient(var(--accent) var(--p, 0%), rgba(255,255,255,0.07) 0);
+    display: grid;
+    place-items: center;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.72rem;
+    color: var(--text);
+  }
+  .scan-label {
+    font-size: 0.62rem;
+    color: var(--muted);
+    font-family: 'JetBrains Mono', monospace;
+  }
+  #shop-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .shop-item {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 10px;
+    font-size: 0.62rem;
+    font-family: 'JetBrains Mono', monospace;
+  }
+  .shop-item button {
+    width: 100%;
+    margin-top: 8px;
+    border: 1px solid var(--border);
+    background: transparent;
+    color: var(--text);
+    border-radius: 8px;
+    padding: 6px;
+    font-size: 0.62rem;
+    cursor: pointer;
+  }
+  .shop-item button:hover { border-color: var(--accent); color: var(--accent); }
+  #global-map {
+    margin-top: 10px;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 12px;
+    background: radial-gradient(circle at 30% 20%, rgba(110,186,255,0.12), transparent 45%), var(--surface);
+    font-size: 0.68rem;
+    font-family: 'JetBrains Mono', monospace;
+    color: var(--muted);
+  }
+  #global-map strong { color: var(--accent3); }
+  .mini-btn {
+    border: 1px solid var(--border);
+    background: var(--surface);
+    color: var(--text);
+    border-radius: 10px;
+    padding: 9px 12px;
+    cursor: pointer;
+    font-size: 0.68rem;
+    font-family: 'JetBrains Mono', monospace;
+    width: 100%;
+    margin-top: 8px;
+  }
+  .mini-btn:hover { border-color: var(--accent); color: var(--accent); }
+  #idle-overlay, #boss-overlay, #dev-panel {
+    display: none;
+    position: fixed;
+    inset: 0;
+    z-index: 420;
+    backdrop-filter: blur(8px);
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 30px;
+  }
+  #idle-overlay.show, #boss-overlay.show, #dev-panel.show { display: flex; }
+  #idle-overlay {
+    background: rgba(5,5,8,0.72);
+    color: var(--text);
+  }
+  #idle-overlay .idle-text {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 1rem;
+    color: var(--accent3);
+    animation: idle-fade 2.4s ease infinite;
+  }
+  @keyframes idle-fade {
+    0%,100% { opacity: 0.25; }
+    50% { opacity: 1; }
+  }
+  #boss-overlay { background: rgba(0,0,0,0.86); z-index: 430; }
+  #boss-overlay h2 { font-size: 2rem; color: #fff; margin-bottom: 6px; }
+  #boss-overlay p { color: var(--muted); font-family: 'JetBrains Mono', monospace; }
+  #dev-panel { background: rgba(10,0,20,0.92); z-index: 440; }
+  #dev-panel .dev-box {
+    width: min(420px, 90vw);
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,110,240,0.4);
+    border-radius: 14px;
+    padding: 18px;
+  }
+  #dev-panel h3 { color: var(--accent2); margin-bottom: 8px; }
+  #dev-panel p { font-family: 'JetBrains Mono', monospace; font-size: 0.72rem; color: var(--muted); margin-bottom: 12px; }
+  body.reality-glitch {
+    animation: reality-glitch 0.2s steps(2) 2;
+    filter: hue-rotate(25deg) saturate(1.2);
+  }
+  @keyframes reality-glitch {
+    0%, 100% { transform: translate(0, 0); }
+    25% { transform: translate(3px, -2px); }
+    50% { transform: translate(-2px, 2px); }
+    75% { transform: translate(2px, 1px); }
+  }
 
   /* ── FAKE LOADER ── */
   #fake-loader {
@@ -492,6 +673,12 @@
   /* Mode: matrix */
   body.matrix-mode { background: #000800; }
   body.matrix-mode { --particle-color: 0, 255, 70; --btn-color: #00ff46; --accent: #00ff46; }
+  /* Mode: zen */
+  body.zen-mode { background: #04100e; }
+  body.zen-mode { --particle-color: 180, 255, 240; --btn-color: #b4fff0; --accent: #b4fff0; }
+  /* Mode: retro90 */
+  body.retro90-mode { background: #180022; }
+  body.retro90-mode { --particle-color: 255, 170, 120; --btn-color: #ffaa78; --accent: #ffaa78; }
 
   /* Scrollable content in panels */
   .panel-inner { max-height: min(360px, 45vh); overflow-y: auto; }
@@ -557,6 +744,13 @@
   </div>
 
   <div id="timer-line">⏱ Session time: <span id="session-time">0:00</span> — You've spent this long doing absolutely nothing.</div>
+  <div id="energy-wrap">
+    <div id="energy-head">
+      <span>Nothing Energy</span>
+      <span id="energy-label">0 / 100</span>
+    </div>
+    <div id="energy-track"><div id="energy-fill"></div></div>
+  </div>
 
   <div id="tabs">
     <button class="tab-btn active" onclick="switchTab('main-panel',this)">🏠 Main</button>
@@ -565,12 +759,21 @@
   </div>
 
   <div id="main-panel" class="panel active">
-    <!-- main content shown above -->
+    <div id="scanner-grid">
+      <div class="scan-card"><div class="scan-circle" id="cpu-circle"><span>0%</span></div><div class="scan-label">CPU</div></div>
+      <div class="scan-card"><div class="scan-circle" id="mem-circle"><span>0%</span></div><div class="scan-label">Memory</div></div>
+      <div class="scan-card"><div class="scan-circle" id="sto-circle"><span>0%</span></div><div class="scan-label">Storage</div></div>
+      <div class="scan-card"><div class="scan-circle" id="pro-circle"><span>0%</span></div><div class="scan-label">Productivity</div></div>
+    </div>
     <div style="font-family:'JetBrains Mono',monospace;font-size:0.65rem;color:var(--muted);text-align:center;padding:8px;background:var(--surface);border:1px solid var(--border);border-radius:12px;">
       <div id="reverse-indicator" style="display:none;color:#ff6ef0;margin-bottom:4px;">⟲ REVERSE MODE ACTIVE — every tap undoes nothing</div>
       <div id="chaos-indicator" style="display:none;color:#ff6ef0;margin-bottom:4px;">⚡ CHAOS MODE ACTIVE</div>
+      <div id="sure-indicator" style="display:none;color:#ffe06e;margin-bottom:4px;">❓ ARE YOU SURE MODE ACTIVE</div>
       Tap 50× to unlock Quantum Mode · Tap 100× fast for Easter Egg
     </div>
+    <button class="mini-btn" onclick="mintNothing()">🧾 Mint Your Nothing (Satire NFT)</button>
+    <button class="mini-btn" onclick="generateStatsCard()">🖼 Generate Shareable Stats Card</button>
+    <div id="global-map">🌍 Global Nothing Map: <strong id="global-count">1,284,992</strong> people are doing nothing right now.</div>
   </div>
 
   <div id="ach-panel" class="panel">
@@ -596,6 +799,7 @@
           <button class="bg-pill" onclick="setSoundMode('laser',this)">Laser</button>
           <button class="bg-pill" onclick="setSoundMode('retro',this)">Retro</button>
           <button class="bg-pill" onclick="setSoundMode('bubble',this)">Bubble</button>
+          <button class="bg-pill" onclick="setSoundMode('dynamic',this)">Dynamic</button>
         </div>
       </div>
       <div class="setting-row">
@@ -612,15 +816,51 @@
         </div>
         <button class="toggle" id="reverse-toggle" onclick="toggleSetting('reverse')"></button>
       </div>
+      <div class="setting-row">
+        <div>
+          <span class="setting-label">🧠 Existential Quotes</span>
+          <span class="setting-sub">Deep nothingness messages</span>
+        </div>
+        <button class="toggle" id="existential-toggle" onclick="toggleSetting('existential')"></button>
+      </div>
+      <div class="setting-row">
+        <div>
+          <span class="setting-label">❓ Are You Sure Mode</span>
+          <span class="setting-sub">Every tap asks for certainty</span>
+        </div>
+        <button class="toggle" id="sure-toggle" onclick="toggleSetting('areYouSure')"></button>
+      </div>
       <div class="setting-row" style="flex-direction:column;align-items:flex-start;gap:8px;">
         <span class="setting-label">🎨 Background Mode</span>
-        <div class="bg-modes">
-          <button class="bg-pill active" onclick="setBgMode('space',this)">🌌 Space</button>
-          <button class="bg-pill" onclick="setBgMode('ocean',this)">🌊 Ocean</button>
-          <button class="bg-pill" onclick="setBgMode('matrix',this)">🧠 Matrix</button>
-          <button class="bg-pill" onclick="setBgMode('neon',this)">🌈 Neon</button>
-          <button class="bg-pill" onclick="setBgMode('minimal',this)">⚫ Minimal</button>
+        <div class="bg-modes" id="ambient-modes">
+          <button class="bg-pill active" onclick="setBgMode('space',this)">🌌 Cosmic Void</button>
+          <button class="bg-pill" onclick="setBgMode('minimal',this)">🤍 Calm Minimal</button>
+          <button class="bg-pill" onclick="setBgMode('neon',this)">🌈 Neon Cyber</button>
+          <button class="bg-pill" onclick="setBgMode('zen',this)">🪟 Zen Glass</button>
+          <button class="bg-pill" onclick="setBgMode('retro90',this)">📼 Retro 90s</button>
         </div>
+      </div>
+      <div class="setting-row" style="display:block;">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+          <span class="setting-label">🛒 Nothing Shop</span>
+          <span class="setting-sub">Coins: <span id="coin-count">0</span></span>
+        </div>
+        <div id="shop-grid">
+          <div class="shop-item">Button Skin<br><button onclick="buyItem('skin',30)">Buy 30</button></div>
+          <div class="shop-item">Theme Unlock<br><button onclick="buyItem('theme',50)">Buy 50</button></div>
+          <div class="shop-item">Particle Boost<br><button onclick="buyItem('particles',40)">Buy 40</button></div>
+          <div class="shop-item">Glow Intensity<br><button onclick="buyItem('glow',25)">Buy 25</button></div>
+        </div>
+      </div>
+      <div class="setting-row" style="display:block;">
+        <span class="setting-label">⭐ Nothing Pro Max Ultra</span>
+        <span class="setting-sub">Golden button + ultra glow + secret messages</span>
+        <button class="mini-btn" onclick="buyProMode()">Unlock for 120 coins</button>
+      </div>
+      <div class="setting-row" style="display:block;">
+        <span class="setting-label">♻ Prestige Mode</span>
+        <span class="setting-sub">Available after 500 taps</span>
+        <button class="mini-btn" id="prestige-btn" onclick="prestigeReset()" disabled>Reset Everything For Nothing+</button>
       </div>
       <button class="share-btn" onclick="shareNothing()">📤 Share Nothing</button>
     </div>
@@ -646,12 +886,28 @@
 
 <!-- Toast -->
 <div id="toast"></div>
+<div id="combo-pop"></div>
+<div id="idle-overlay"><div class="idle-text">Now this is real nothing.</div></div>
+<div id="boss-overlay" onclick="defeatBoss()"><div><h2>The Void</h2><p>Tap to defeat nothing.</p></div></div>
+<div id="dev-panel">
+  <div class="dev-box">
+    <h3>Developer of Nothing</h3>
+    <p>Advanced controls unlocked. Everything still does nothing.</p>
+    <div class="setting-sub" style="margin-bottom:6px;">Void Intensity</div>
+    <input type="range" min="0" max="100" value="50" style="width:100%;margin-bottom:10px;">
+    <div class="setting-sub" style="margin-bottom:6px;">Reality Stability</div>
+    <input type="range" min="0" max="100" value="12" style="width:100%;margin-bottom:10px;">
+    <button class="mini-btn" onclick="closeDevPanel()">Close Controls</button>
+  </div>
+</div>
+<canvas id="stats-card-canvas" width="1080" height="1080" style="display:none;"></canvas>
 
 <script>
 // ── STATE ──
 const state = {
   taps: parseInt(localStorage.getItem('taps') || '0'),
   totalTaps: parseInt(localStorage.getItem('totalTaps') || '0'),
+  coins: parseInt(localStorage.getItem('coins') || '0'),
   sessions: parseInt(localStorage.getItem('sessions') || '0') + 1,
   streak: parseInt(localStorage.getItem('streak') || '0'),
   lastDate: localStorage.getItem('lastDate') || '',
@@ -659,10 +915,25 @@ const state = {
   soundMode: localStorage.getItem('soundMode') || 'click',
   chaos: localStorage.getItem('chaos') === '1',
   reverse: localStorage.getItem('reverse') === '1',
+  areYouSure: localStorage.getItem('areYouSure') === '1',
+  existential: localStorage.getItem('existential') === '1',
+  proMode: localStorage.getItem('proMode') === '1',
+  prestige: parseInt(localStorage.getItem('prestige') || '0'),
   bgMode: localStorage.getItem('bgMode') || 'space',
   achievements: JSON.parse(localStorage.getItem('achievements') || '[]'),
   easterEggFast: 0,
   easterEggTimer: null,
+  comboCount: 0,
+  comboTimer: null,
+  energy: parseInt(localStorage.getItem('energy') || '0'),
+  bossActive: false,
+  bossDefeated: localStorage.getItem('bossDefeated') === '1',
+  idleTimer: null,
+  ambientNode: null,
+  sureStep: 0,
+  particlesBoost: localStorage.getItem('particlesBoost') === '1',
+  glowBoost: localStorage.getItem('glowBoost') === '1',
+  unlockedThemes: JSON.parse(localStorage.getItem('unlockedThemes') || '[]'),
   sessionStart: Date.now(),
 };
 
@@ -670,14 +941,24 @@ const state = {
 function save() {
   localStorage.setItem('taps', state.taps);
   localStorage.setItem('totalTaps', state.totalTaps);
+  localStorage.setItem('coins', state.coins);
   localStorage.setItem('sessions', state.sessions);
   localStorage.setItem('streak', state.streak);
   localStorage.setItem('lastDate', state.lastDate);
+  localStorage.setItem('energy', state.energy);
   localStorage.setItem('achievements', JSON.stringify(state.achievements));
   localStorage.setItem('sound', state.sound ? '1' : '0');
   localStorage.setItem('soundMode', state.soundMode);
   localStorage.setItem('chaos', state.chaos ? '1' : '0');
   localStorage.setItem('reverse', state.reverse ? '1' : '0');
+  localStorage.setItem('areYouSure', state.areYouSure ? '1' : '0');
+  localStorage.setItem('existential', state.existential ? '1' : '0');
+  localStorage.setItem('proMode', state.proMode ? '1' : '0');
+  localStorage.setItem('prestige', String(state.prestige));
+  localStorage.setItem('bossDefeated', state.bossDefeated ? '1' : '0');
+  localStorage.setItem('particlesBoost', state.particlesBoost ? '1' : '0');
+  localStorage.setItem('glowBoost', state.glowBoost ? '1' : '0');
+  localStorage.setItem('unlockedThemes', JSON.stringify(state.unlockedThemes));
   localStorage.setItem('bgMode', state.bgMode);
 }
 
@@ -746,12 +1027,25 @@ const quotes = [
   "You are farming pure calm.",
   "This is intentional emptiness.",
 ];
+const existentialQuotes = [
+  "Nothingness is not empty. It is full of possibility.",
+  "The quieter you become, the more you hear nothing.",
+  "In the void, identity takes a coffee break.",
+  "Existence is mostly waiting with better branding.",
+  "You are not wasting time. Time is wasting itself.",
+  "Meaning is optional. Breathing is enough.",
+  "Stillness is rebellion in motion.",
+  "Silence is the loudest architecture.",
+  "Between two thoughts, there is your true home.",
+  "The void does not judge. It simply watches."
+];
 let lastQuoteIdx = -1;
 function getQuote() {
+  const source = state.existential ? existentialQuotes : quotes;
   let idx;
-  do { idx = Math.floor(Math.random() * quotes.length); } while (idx === lastQuoteIdx);
+  do { idx = Math.floor(Math.random() * source.length); } while (idx === lastQuoteIdx);
   lastQuoteIdx = idx;
-  return quotes[idx];
+  return source[idx];
 }
 
 // ── LEVELS ──
@@ -777,6 +1071,16 @@ const achDefs = [
   { id:'void',  icon:'🌀', name:'Void Champion', req:'200 taps', check: t => t >= 200 },
   { id:'time',  icon:'⏳', name:'5 Min Nothing', req:'5 min session', check: () => (Date.now() - state.sessionStart) > 300000 },
   { id:'quantum',icon:'⚛️',name:'Quantum Tapper',req:'Unlock Quantum Mode',check: t => t >= 50 },
+  { id:'legend500', icon:'👑', name:'Nothing Legend', req:'500 taps', check: t => t >= 500 },
+  { id:'coins50', icon:'🪙', name:'Coin Collector', req:'50 coins', check: () => state.coins >= 50 },
+  { id:'coins200', icon:'💰', name:'Void Banker', req:'200 coins', check: () => state.coins >= 200 },
+  { id:'energymax', icon:'🔋', name:'Peak Nothing', req:'Fill Nothing Energy', check: () => state.energy >= 100 },
+  { id:'boss', icon:'👾', name:'Void Slayer', req:'Defeat The Void', check: () => state.bossDefeated },
+  { id:'shopper', icon:'🛒', name:'Nothing Shopper', req:'Buy 1 upgrade', check: () => state.particlesBoost || state.glowBoost || state.unlockedThemes.length > 0 },
+  { id:'promax', icon:'🌟', name:'Pro Max Ultra', req:'Unlock Pro mode', check: () => state.proMode },
+  { id:'prestige', icon:'♻️', name:'Nothing+', req:'Prestige once', check: () => state.prestige >= 1 },
+  { id:'streak3', icon:'🔥', name:'Hot Streak', req:'3-day streak', check: () => state.streak >= 3 },
+  { id:'sessions5', icon:'📆', name:'Came Back Again', req:'5 sessions', check: () => state.sessions >= 5 },
 ];
 function renderAchievements() {
   const grid = document.getElementById('achievements-grid');
@@ -808,6 +1112,10 @@ function updateUI() {
   document.getElementById('session-count').textContent = state.sessions;
   document.getElementById('total-count').textContent = state.totalTaps;
   document.getElementById('streak-num').textContent = state.streak;
+  document.getElementById('coin-count').textContent = state.coins;
+  document.getElementById('energy-label').textContent = `${state.energy} / 100`;
+  document.getElementById('energy-fill').style.width = Math.min(100, state.energy) + '%';
+  document.getElementById('prestige-btn').disabled = state.totalTaps < 500;
 
   // XP / Level
   const lv = getLevel(state.totalTaps);
@@ -823,6 +1131,7 @@ function updateUI() {
 
   // Button evolution
   updateButton();
+  updateScanner();
 }
 
 // ── BUTTON EVOLUTION ──
@@ -839,7 +1148,13 @@ function updateButton() {
   btn.style.borderRadius = shape;
   btn.style.borderColor = color;
   btn.style.color = color;
-  btn.style.boxShadow = `0 0 30px ${color}30, inset 0 0 30px ${color}08`;
+  const glow = state.glowBoost ? 60 : 30;
+  btn.style.boxShadow = `0 0 ${glow}px ${color}40, inset 0 0 30px ${color}08`;
+  if (state.proMode) {
+    btn.style.borderColor = '#ffd86e';
+    btn.style.color = '#ffd86e';
+    btn.style.background = 'rgba(255,216,110,0.08)';
+  }
   document.documentElement.style.setProperty('--btn-color', color);
 }
 
@@ -852,7 +1167,7 @@ let animFrame;
 function initParticles() {
   canvas.width = window.innerWidth; canvas.height = window.innerHeight;
   particles = [];
-  const count = state.bgMode === 'minimal' ? 0 : 60;
+  const count = state.bgMode === 'minimal' ? 0 : (state.particlesBoost ? 110 : 60);
   for (let i = 0; i < count; i++) particles.push(newParticle(true));
   if (state.bgMode === 'matrix') initMatrix();
 }
@@ -876,6 +1191,27 @@ function initMatrix() {
 function drawBg() {
   const mode = state.bgMode;
   ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  if (mode === 'zen') {
+    ctx.fillStyle = 'rgba(180,255,240,0.03)';
+    for (let i = 0; i < 5; i++) {
+      ctx.beginPath();
+      ctx.rect(40 + i * 20, 80 + i * 24, canvas.width - 80, 32);
+      ctx.fill();
+    }
+  }
+
+  if (mode === 'retro90') {
+    ctx.fillStyle = 'rgba(255,110,240,0.05)';
+    ctx.fillRect(0, canvas.height * 0.68, canvas.width, canvas.height * 0.32);
+    ctx.strokeStyle = 'rgba(110,186,255,0.25)';
+    for (let y = canvas.height * 0.68; y < canvas.height; y += 20) {
+      ctx.beginPath();
+      ctx.moveTo(0, y);
+      ctx.lineTo(canvas.width, y);
+      ctx.stroke();
+    }
+  }
 
   if (mode === 'ocean') {
     // Wave layers
@@ -923,7 +1259,7 @@ function drawBg() {
 
   // Particles
   const t = Date.now() * 0.001;
-  const [r,g,b] = mode === 'space' ? [127,255,110] : mode === 'ocean' ? [110,186,255] : mode === 'neon' ? [255,110,240] : [255,255,255];
+  const [r,g,b] = mode === 'space' ? [127,255,110] : mode === 'ocean' ? [110,186,255] : mode === 'neon' ? [255,110,240] : mode === 'zen' ? [180,255,240] : mode === 'retro90' ? [255,170,120] : [255,255,255];
   particles.forEach((p, i) => {
     p.wave += 0.01;
     p.x += p.vx + Math.sin(p.wave) * (mode === 'ocean' ? 0.4 : 0.2);
@@ -950,9 +1286,130 @@ function animate() { drawBg(); animFrame = requestAnimationFrame(animate); }
 window.addEventListener('resize', initParticles);
 initParticles(); animate();
 
+function updateScanner() {
+  const ids = ['cpu-circle', 'mem-circle', 'sto-circle', 'pro-circle'];
+  ids.forEach((id) => {
+    const el = document.getElementById(id);
+    const span = el.querySelector('span');
+    const v = Math.max(0, Math.floor(Math.random() * 4) - 1);
+    el.style.setProperty('--p', `${v}%`);
+    span.textContent = `${v}%`;
+  });
+}
+
+function showCombo(text) {
+  const el = document.getElementById('combo-pop');
+  el.textContent = text;
+  el.classList.remove('show');
+  el.offsetHeight;
+  el.classList.add('show');
+}
+
+function triggerEnergy() {
+  if (state.energy < 100) return;
+  showToast('You have reached peak nothing.');
+  let v = 100;
+  const iv = setInterval(() => {
+    v -= 4;
+    state.energy = Math.max(0, v);
+    document.getElementById('energy-fill').style.width = state.energy + '%';
+    document.getElementById('energy-label').textContent = `${state.energy} / 100`;
+    if (v <= 0) clearInterval(iv);
+  }, 45);
+}
+
+function activateBoss() {
+  if (state.bossDefeated || state.bossActive || state.totalTaps < 200) return;
+  state.bossActive = true;
+  document.getElementById('boss-overlay').classList.add('show');
+  document.body.style.transition = 'filter 0.4s';
+  document.body.style.filter = 'brightness(0.55)';
+  btn.classList.add('chaos-mode');
+}
+
+function defeatBoss() {
+  state.bossActive = false;
+  state.bossDefeated = true;
+  document.getElementById('boss-overlay').classList.remove('show');
+  document.body.style.filter = '';
+  showToast('You defeated nothing.');
+}
+
+function resetIdleTimer() {
+  clearTimeout(state.idleTimer);
+  document.getElementById('idle-overlay').classList.remove('show');
+  if (state.ambientNode) {
+    try { state.ambientNode.stop(); } catch (e) {}
+    state.ambientNode = null;
+  }
+  state.idleTimer = setTimeout(() => {
+    document.getElementById('idle-overlay').classList.add('show');
+    playAmbient();
+  }, 30000);
+}
+
+function playAmbient() {
+  if (!state.sound) return;
+  try {
+    if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    const osc = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
+    osc.type = 'sine';
+    osc.frequency.value = 96;
+    gain.gain.value = 0.015;
+    osc.connect(gain);
+    gain.connect(audioCtx.destination);
+    osc.start();
+    state.ambientNode = osc;
+    setTimeout(() => {
+      try { osc.stop(); } catch (e) {}
+      if (state.ambientNode === osc) state.ambientNode = null;
+    }, 9000);
+  } catch (e) {}
+}
+
+function maybeRealityGlitch() {
+  if (Math.random() > 0.02) return;
+  document.body.classList.add('reality-glitch');
+  setMsg('Reality.exe stopped working.');
+  setTimeout(() => document.body.classList.remove('reality-glitch'), 250);
+}
+
+function applyTimeAwareness() {
+  const elapsed = Date.now() - state.sessionStart;
+  if (elapsed > 600000) setMsg('We are concerned.');
+  else if (elapsed > 300000) setMsg('Still here?');
+  else if (elapsed > 120000) setMsg('You could have done something else.');
+}
+
+function handleCombo() {
+  state.comboCount += 1;
+  clearTimeout(state.comboTimer);
+  state.comboTimer = setTimeout(() => { state.comboCount = 0; }, 1200);
+  if (state.comboCount === 3) showCombo('3x Nothing');
+  if (state.comboCount === 10) showCombo('10x Nothing');
+  if (state.comboCount === 25) showCombo('25x Nothing');
+  if (state.comboCount === 100) showCombo('100x ULTRA NOTHING');
+}
+
 // ── TAP HANDLER ──
 const btn = document.getElementById('do-nothing-btn');
 btn.addEventListener('click', function(e) {
+  resetIdleTimer();
+
+  if (state.bossActive) {
+    defeatBoss();
+    save();
+    return;
+  }
+
+  if (state.areYouSure) {
+    state.sureStep = (state.sureStep + 1) % 3;
+    if (state.sureStep === 1) { setMsg('Are you sure?'); return; }
+    if (state.sureStep === 2) { setMsg('Are you really sure?'); return; }
+    setMsg('Okay fine. Nothing.');
+  }
+
   if (state.reverse) {
     state.taps = Math.max(0, state.taps - 1);
     state.totalTaps = Math.max(0, state.totalTaps - 1);
@@ -960,6 +1417,8 @@ btn.addEventListener('click', function(e) {
   } else {
     state.taps++;
     state.totalTaps++;
+    state.coins += 1;
+    state.energy = Math.min(100, state.energy + 5);
     setMsg(getQuote());
   }
 
@@ -976,12 +1435,15 @@ btn.addEventListener('click', function(e) {
   if (state.chaos) {
     document.body.classList.add('shake');
     setTimeout(() => document.body.classList.remove('shake'), 400);
-    // move btn randomly
-    const arena = document.getElementById('btn-arena');
     const mx = (Math.random() - 0.5) * 80, my = (Math.random() - 0.5) * 40;
     btn.style.transform = `translate(${mx}px,${my}px)`;
     setTimeout(() => btn.style.transform = '', 300);
   }
+
+  // Adaptive button physics
+  btn.style.transform = `scale(0.88)`;
+  setTimeout(() => { btn.style.transform = 'scale(1.08)'; }, 70);
+  setTimeout(() => { btn.style.transform = ''; }, 180);
 
   // Evolve every 20 taps
   if (state.taps % 20 === 0) {
@@ -995,6 +1457,11 @@ btn.addEventListener('click', function(e) {
 
   // Burst
   createBurst(e.clientX, e.clientY);
+  handleCombo();
+  triggerEnergy();
+  activateBoss();
+  maybeRealityGlitch();
+  applyTimeAwareness();
 
   save(); updateUI(); checkAchievements(); renderAchievements();
 });
@@ -1056,12 +1523,17 @@ function playClick() {
   try {
     if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
     const t = audioCtx.currentTime;
+    let mode = state.soundMode;
+    if (mode === 'dynamic') {
+      const all = ['click', 'pop', 'laser', 'retro', 'bubble', 'bass', 'reverse'];
+      mode = all[Math.floor(Math.random() * all.length)];
+    }
     const osc = audioCtx.createOscillator();
     const gain = audioCtx.createGain();
     osc.connect(gain);
     gain.connect(audioCtx.destination);
 
-    if (state.soundMode === 'click') {
+    if (mode === 'click') {
       osc.type = 'sine';
       osc.frequency.setValueAtTime(420 + Math.random() * 180, t);
       osc.frequency.exponentialRampToValueAtTime(220, t + 0.14);
@@ -1072,7 +1544,7 @@ function playClick() {
       return;
     }
 
-    if (state.soundMode === 'pop') {
+    if (mode === 'pop') {
       osc.type = 'triangle';
       osc.frequency.setValueAtTime(200 + Math.random() * 80, t);
       osc.frequency.exponentialRampToValueAtTime(70, t + 0.09);
@@ -1083,7 +1555,7 @@ function playClick() {
       return;
     }
 
-    if (state.soundMode === 'laser') {
+    if (mode === 'laser') {
       osc.type = 'sawtooth';
       osc.frequency.setValueAtTime(1100 + Math.random() * 350, t);
       osc.frequency.exponentialRampToValueAtTime(180, t + 0.18);
@@ -1094,7 +1566,7 @@ function playClick() {
       return;
     }
 
-    if (state.soundMode === 'retro') {
+    if (mode === 'retro') {
       osc.type = 'square';
       osc.frequency.setValueAtTime(280 + Math.random() * 120, t);
       osc.frequency.linearRampToValueAtTime(560, t + 0.04);
@@ -1103,6 +1575,28 @@ function playClick() {
       gain.gain.exponentialRampToValueAtTime(0.001, t + 0.13);
       osc.start(t);
       osc.stop(t + 0.13);
+      return;
+    }
+
+    if (mode === 'bass') {
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(90, t);
+      osc.frequency.exponentialRampToValueAtTime(50, t + 0.2);
+      gain.gain.setValueAtTime(0.14, t);
+      gain.gain.exponentialRampToValueAtTime(0.001, t + 0.22);
+      osc.start(t);
+      osc.stop(t + 0.22);
+      return;
+    }
+
+    if (mode === 'reverse') {
+      osc.type = 'triangle';
+      osc.frequency.setValueAtTime(140, t);
+      osc.frequency.exponentialRampToValueAtTime(760, t + 0.16);
+      gain.gain.setValueAtTime(0.09, t);
+      gain.gain.exponentialRampToValueAtTime(0.001, t + 0.17);
+      osc.start(t);
+      osc.stop(t + 0.17);
       return;
     }
 
@@ -1139,7 +1633,8 @@ function switchTab(panelId, tabEl) {
 // ── SETTINGS ──
 function toggleSetting(key) {
   state[key] = !state[key];
-  const btn = document.getElementById(key + '-toggle');
+  const map = { areYouSure: 'sure-toggle', existential: 'existential-toggle' };
+  const btn = document.getElementById(map[key] || (key + '-toggle'));
   btn.classList.toggle('on', state[key]);
   if (key === 'chaos') {
     document.getElementById('do-nothing-btn').classList.toggle('chaos-mode', state.chaos);
@@ -1147,6 +1642,9 @@ function toggleSetting(key) {
   }
   if (key === 'reverse') {
     document.getElementById('reverse-indicator').style.display = state.reverse ? 'block' : 'none';
+  }
+  if (key === 'areYouSure') {
+    document.getElementById('sure-indicator').style.display = state.areYouSure ? 'block' : 'none';
   }
   save();
 }
@@ -1160,12 +1658,100 @@ function setSoundMode(mode, el) {
 }
 
 function setBgMode(mode, el) {
+  if ((mode === 'zen' || mode === 'retro90') && !state.unlockedThemes.includes(mode)) {
+    showToast('Buy Theme Unlock in shop first.');
+    return;
+  }
   state.bgMode = mode;
-  document.querySelectorAll('.bg-pill').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('#ambient-modes .bg-pill').forEach(p => p.classList.remove('active'));
   el.classList.add('active');
   document.body.className = mode !== 'space' ? mode + '-mode' : '';
   initParticles();
   save();
+}
+
+function buyItem(kind, cost) {
+  if (state.coins < cost) {
+    showToast('Not enough Nothing Coins.');
+    return;
+  }
+  state.coins -= cost;
+  if (kind === 'skin') state.soundMode = 'retro';
+  if (kind === 'theme' && !state.unlockedThemes.includes('zen')) state.unlockedThemes.push('zen', 'retro90');
+  if (kind === 'particles') state.particlesBoost = true;
+  if (kind === 'glow') state.glowBoost = true;
+  showToast('Purchased. Still does nothing.');
+  save();
+  updateUI();
+  updateButton();
+}
+
+function buyProMode() {
+  if (state.proMode) { showToast('Pro Max Ultra already active.'); return; }
+  if (state.coins < 120) { showToast('Need 120 Nothing Coins.'); return; }
+  state.coins -= 120;
+  state.proMode = true;
+  showToast('Nothing Pro Max Ultra unlocked.');
+  save();
+  updateUI();
+}
+
+function prestigeReset() {
+  if (state.totalTaps < 500) {
+    showToast('Prestige unlocks at 500 taps.');
+    return;
+  }
+  state.prestige += 1;
+  state.taps = 0;
+  state.totalTaps = 0;
+  state.energy = 0;
+  state.coins += 75;
+  if (!state.unlockedThemes.includes('retro90')) state.unlockedThemes.push('retro90');
+  state.bgMode = 'retro90';
+  document.body.className = 'retro90-mode';
+  showToast('Nothing+ unlocked. Counter reset.');
+  save();
+  updateUI();
+  initParticles();
+}
+
+function mintNothing() {
+  showToast('Minting your Nothing... complete. Value: 0.');
+}
+
+function closeDevPanel() {
+  document.getElementById('dev-panel').classList.remove('show');
+}
+
+function generateStatsCard() {
+  const canvas = document.getElementById('stats-card-canvas');
+  const c = canvas.getContext('2d');
+  const grad = c.createLinearGradient(0, 0, 1080, 1080);
+  grad.addColorStop(0, '#07140f');
+  grad.addColorStop(1, '#140417');
+  c.fillStyle = grad;
+  c.fillRect(0, 0, 1080, 1080);
+  c.fillStyle = '#7fff6e';
+  c.font = 'bold 76px Syne';
+  c.fillText('DO NOTHING', 80, 160);
+  c.fillStyle = '#e8e8f0';
+  c.font = '52px Syne';
+  c.fillText(`I've done nothing ${state.totalTaps} times.`, 80, 280);
+  c.font = '38px JetBrains Mono';
+  c.fillText(`Streak: ${state.streak} days`, 80, 360);
+  c.fillText(`Coins: ${state.coins}`, 80, 420);
+  c.fillText(`Level: ${getLevel(state.totalTaps)[1]}`, 80, 480);
+  c.fillStyle = 'rgba(127,255,110,0.2)';
+  c.fillRect(80, 540, 920, 2);
+  c.fillStyle = '#6ebaff';
+  c.font = '34px JetBrains Mono';
+  c.fillText('#DoNothing #Productivity', 80, 620);
+  const url = canvas.toDataURL('image/png');
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `nothing-stats-${Date.now()}.png`;
+  a.click();
+  showToast('Stats card generated.');
 }
 
 // ── TIMER ──
@@ -1223,22 +1809,79 @@ function shareNothing() {
   if (navigator.share) {
     navigator.share({ title: 'Do Nothing', text }).catch(() => {});
   } else {
-    navigator.clipboard.writeText(text).then(() => showToast('📋 Copied to clipboard!'));
+    navigator.clipboard.writeText(text).then(() => showToast('📋 Copied. Open WhatsApp/X and paste.'));
+    window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
+    window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}`, '_blank');
   }
+}
+
+function updateGlobalMapCount() {
+  const base = 1284992 + Math.floor(Math.sin(Date.now() / 4000) * 2200) + Math.floor(Math.random() * 1500);
+  document.getElementById('global-count').textContent = base.toLocaleString();
+}
+
+function fakeErrorPulse() {
+  const errs = [
+    'Nothing failed successfully.',
+    'Error 000: Nothing not found.',
+    'Warning: Too much calm detected.',
+    'Critical: Purpose overflow blocked.'
+  ];
+  if (Math.random() < 0.18) showToast(errs[Math.floor(Math.random() * errs.length)]);
+}
+
+function scheduleSarcasticNotifications() {
+  if (!('Notification' in window)) return;
+  if (Notification.permission === 'default') Notification.requestPermission().catch(() => {});
+  if (Notification.permission !== 'granted') return;
+  const lines = [
+    'You forgot to do nothing today.',
+    'The void misses you.',
+    'Productivity detected. Open app immediately.'
+  ];
+  setTimeout(() => {
+    new Notification('Do Nothing', { body: lines[Math.floor(Math.random() * lines.length)] });
+  }, 12000);
+}
+
+function checkBatteryAwareness() {
+  if (!navigator.getBattery) return;
+  navigator.getBattery().then((b) => {
+    const fire = () => { if (b.level <= 0.2) setMsg('Even your battery is doing nothing.'); };
+    fire();
+    b.addEventListener('levelchange', fire);
+  }).catch(() => {});
+}
+
+function checkNightModeMessage() {
+  const h = new Date().getHours();
+  if (h >= 0 && h < 5) setMsg('Why are you awake doing nothing?');
 }
 
 // ── INIT ──
 updateUI();
 renderAchievements();
 checkAchievements();
+updateGlobalMapCount();
+updateScanner();
+resetIdleTimer();
+scheduleSarcasticNotifications();
+checkBatteryAwareness();
+checkNightModeMessage();
+setInterval(updateScanner, 2000);
+setInterval(updateGlobalMapCount, 4000);
+setInterval(fakeErrorPulse, 18000);
 
 // Apply saved toggles/sound mode
 document.getElementById('sound-toggle').classList.toggle('on', state.sound);
 document.getElementById('chaos-toggle').classList.toggle('on', state.chaos);
 document.getElementById('reverse-toggle').classList.toggle('on', state.reverse);
+document.getElementById('sure-toggle').classList.toggle('on', state.areYouSure);
+document.getElementById('existential-toggle').classList.toggle('on', state.existential);
 document.getElementById('do-nothing-btn').classList.toggle('chaos-mode', state.chaos);
 document.getElementById('chaos-indicator').style.display = state.chaos ? 'block' : 'none';
 document.getElementById('reverse-indicator').style.display = state.reverse ? 'block' : 'none';
+document.getElementById('sure-indicator').style.display = state.areYouSure ? 'block' : 'none';
 document.querySelectorAll('#sound-modes .bg-pill').forEach((pill) => {
   pill.classList.toggle('active', pill.textContent.toLowerCase() === state.soundMode);
 });
@@ -1246,10 +1889,27 @@ document.querySelectorAll('#sound-modes .bg-pill').forEach((pill) => {
 // Apply saved bg mode
 if (state.bgMode !== 'space') {
   document.body.className = state.bgMode + '-mode';
-  document.querySelector(`.bg-pill[onclick*="${state.bgMode}"]`)?.classList.add('active');
-  document.querySelector(`.bg-pill[onclick*="space"]`)?.classList.remove('active');
+  document.querySelector(`#ambient-modes .bg-pill[onclick*="${state.bgMode}"]`)?.classList.add('active');
+  document.querySelector(`#ambient-modes .bg-pill[onclick*="space"]`)?.classList.remove('active');
   initParticles();
 }
+
+// Activity listeners for idle mode
+['mousemove', 'keydown', 'touchstart', 'scroll'].forEach((evt) => {
+  window.addEventListener(evt, resetIdleTimer, { passive: true });
+});
+
+// Secret long press unlock
+let pressTimer = null;
+btn.addEventListener('pointerdown', () => {
+  pressTimer = setTimeout(() => {
+    document.getElementById('dev-panel').classList.add('show');
+    showToast('Developer of Nothing unlocked.');
+  }, 5000);
+});
+['pointerup', 'pointerleave', 'pointercancel'].forEach((evt) => {
+  btn.addEventListener(evt, () => clearTimeout(pressTimer));
+});
 </script>
 </body>
 </html>
