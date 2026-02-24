@@ -35,6 +35,36 @@
     user-select: none;
     cursor: default;
   }
+  body::before {
+    content: "";
+    position: fixed;
+    inset: -20%;
+    z-index: 0;
+    pointer-events: none;
+    background:
+      radial-gradient(circle at 15% 20%, rgba(127, 255, 110, 0.12), transparent 35%),
+      radial-gradient(circle at 85% 12%, rgba(110, 186, 255, 0.11), transparent 34%),
+      radial-gradient(circle at 50% 90%, rgba(255, 110, 240, 0.08), transparent 45%);
+    filter: blur(30px) saturate(1.1);
+    animation: ambient-drift 26s ease-in-out infinite alternate;
+  }
+  body::after {
+    content: "";
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+    opacity: 0.12;
+    background-image:
+      linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px);
+    background-size: 44px 44px;
+    mask-image: radial-gradient(circle at center, black 35%, transparent 95%);
+  }
+  @keyframes ambient-drift {
+    0% { transform: translate3d(0, 0, 0) scale(1); }
+    100% { transform: translate3d(0, -20px, 0) scale(1.08); }
+  }
 
   /* ── CANVAS BG ── */
   #bgCanvas {
@@ -60,6 +90,10 @@
     display: flex; flex-direction: column; align-items: center;
     gap: 0; width: 100%; max-width: 500px; padding: 20px;
     margin: 0 auto;
+  }
+  #app > * {
+    position: relative;
+    z-index: 1;
   }
 
   /* ── HEADER ── */
@@ -858,6 +892,111 @@
   body[data-page="settings-panel"] .main-only {
     display: none;
   }
+  body.focus-mode #tabs,
+  body.focus-mode #stats,
+  body.focus-mode #xp-wrap,
+  body.focus-mode #streak-bar,
+  body.focus-mode #timer-line,
+  body.focus-mode #energy-wrap,
+  body.focus-mode #missions,
+  body.focus-mode #main-panel,
+  body.focus-mode #ach-panel,
+  body.focus-mode #settings-panel {
+    display: none !important;
+  }
+  body.focus-mode #app {
+    max-width: 620px;
+    padding-top: 40px;
+  }
+  body.focus-mode #btn-arena {
+    min-height: 56vh;
+  }
+  body.focus-mode #msg-box {
+    margin-top: -14px;
+  }
+  #quick-dock {
+    position: fixed;
+    right: 14px;
+    bottom: 14px;
+    z-index: 520;
+    display: grid;
+    gap: 6px;
+  }
+  .dock-btn {
+    border: 1px solid var(--border);
+    background: rgba(8,8,12,0.78);
+    color: var(--text);
+    border-radius: 10px;
+    min-width: 42px;
+    height: 38px;
+    padding: 0 10px;
+    cursor: pointer;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.66rem;
+    transition: transform 0.2s, border-color 0.2s, color 0.2s;
+    backdrop-filter: blur(12px);
+  }
+  .dock-btn:hover {
+    transform: translateY(-1px);
+    border-color: rgba(127,255,110,0.5);
+    color: var(--accent);
+  }
+  #shortcut-help {
+    display: none;
+    position: fixed;
+    inset: 0;
+    z-index: 530;
+    background: rgba(0,0,0,0.58);
+    backdrop-filter: blur(10px);
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+  }
+  #shortcut-help.show { display: flex; }
+  .shortcut-box {
+    width: min(460px, 92vw);
+    border: 1px solid rgba(127,255,110,0.3);
+    border-radius: 16px;
+    background: rgba(12, 13, 20, 0.88);
+    padding: 16px;
+  }
+  .shortcut-title {
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: var(--accent);
+    margin-bottom: 10px;
+  }
+  .shortcut-list {
+    display: grid;
+    gap: 8px;
+    margin-bottom: 12px;
+  }
+  .shortcut-row {
+    display: flex;
+    justify-content: space-between;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.68rem;
+    color: var(--muted);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 8px 10px;
+  }
+  .shortcut-row kbd {
+    border: 1px solid var(--border);
+    border-bottom-width: 2px;
+    border-radius: 6px;
+    padding: 1px 6px;
+    color: var(--text);
+    background: rgba(255,255,255,0.03);
+    font-size: 0.62rem;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      animation: none !important;
+      transition: none !important;
+      scroll-behavior: auto !important;
+    }
+  }
 
   @media (max-height: 760px) {
     body { justify-content: flex-start; }
@@ -1105,6 +1244,28 @@
     </div>
   </div>
 </div>
+<div id="quick-dock" aria-label="Quick Actions">
+  <button class="dock-btn" onclick="btn.click()" title="Tap nothing (Space)">Tap</button>
+  <button class="dock-btn" onclick="cycleBgMode()" title="Cycle theme (G)">Theme</button>
+  <button class="dock-btn" onclick="toggleFocusMode()" title="Toggle focus mode (F)">Focus</button>
+  <button class="dock-btn" onclick="toggleShortcutHelp()" title="Keyboard shortcuts (?)">?</button>
+</div>
+<div id="shortcut-help" onclick="toggleShortcutHelp(true)">
+  <div class="shortcut-box" onclick="event.stopPropagation()">
+    <div class="shortcut-title">Keyboard Shortcuts</div>
+    <div class="shortcut-list">
+      <div class="shortcut-row"><span>Tap Do Nothing</span><kbd>Space</kbd></div>
+      <div class="shortcut-row"><span>Cycle Background</span><kbd>G</kbd></div>
+      <div class="shortcut-row"><span>Toggle Chaos Mode</span><kbd>C</kbd></div>
+      <div class="shortcut-row"><span>Toggle Reverse Mode</span><kbd>R</kbd></div>
+      <div class="shortcut-row"><span>Toggle Sound</span><kbd>S</kbd></div>
+      <div class="shortcut-row"><span>Focus Mode</span><kbd>F</kbd></div>
+      <div class="shortcut-row"><span>Open Shortcuts</span><kbd>?</kbd></div>
+      <div class="shortcut-row"><span>Close Panels</span><kbd>Esc</kbd></div>
+    </div>
+    <button class="mini-btn" onclick="toggleShortcutHelp(true)">Close</button>
+  </div>
+</div>
 <canvas id="stats-card-canvas" width="1080" height="1080" style="display:none;"></canvas>
 
 <script>
@@ -1146,6 +1307,7 @@ const state = {
   mintCount: parseInt(localStorage.getItem('mintCount') || '0'),
   lastMint: JSON.parse(localStorage.getItem('lastMint') || 'null'),
   minting: false,
+  focusMode: localStorage.getItem('focusMode') === '1',
   sessionStart: Date.now(),
 };
 
@@ -1178,6 +1340,7 @@ function save() {
   localStorage.setItem('mintCount', String(state.mintCount));
   localStorage.setItem('lastMint', JSON.stringify(state.lastMint));
   localStorage.setItem('bgMode', state.bgMode);
+  localStorage.setItem('focusMode', state.focusMode ? '1' : '0');
 }
 
 // ── STREAK ──
@@ -2138,6 +2301,44 @@ function setBgMode(mode, el) {
   save();
 }
 
+function cycleBgMode() {
+  const pills = Array.from(document.querySelectorAll('#ambient-modes .bg-pill'));
+  if (!pills.length) return;
+  const ids = pills
+    .map((pill) => {
+      const onclick = pill.getAttribute('onclick') || '';
+      const m = onclick.match(/setBgMode\('([^']+)'/);
+      return m ? m[1] : '';
+    })
+    .filter(Boolean);
+  if (!ids.length) return;
+  const currentIndex = Math.max(0, ids.indexOf(state.bgMode));
+  for (let step = 1; step <= ids.length; step++) {
+    const next = ids[(currentIndex + step) % ids.length];
+    if (!isThemeUnlocked(next)) continue;
+    const pill = pills.find((p) => (p.getAttribute('onclick') || '').includes(`'${next}'`));
+    if (pill) setBgMode(next, pill);
+    break;
+  }
+}
+
+function toggleFocusMode() {
+  state.focusMode = !state.focusMode;
+  document.body.classList.toggle('focus-mode', state.focusMode);
+  showToast(state.focusMode ? 'Focus mode enabled.' : 'Focus mode disabled.');
+  save();
+}
+
+function toggleShortcutHelp(forceClose = false) {
+  const el = document.getElementById('shortcut-help');
+  if (!el) return;
+  if (forceClose) {
+    el.classList.remove('show');
+    return;
+  }
+  el.classList.toggle('show');
+}
+
 function buyItem(kind, cost) {
   if (kind === 'skin' && state.soundMode === 'retro') { showToast('Already owned.'); return; }
   if (kind === 'theme' && state.unlockedThemes.includes('zen') && state.unlockedThemes.includes('retro90')) { showToast('Already owned.'); return; }
@@ -2520,10 +2721,58 @@ if (state.bgMode !== 'space' && isThemeUnlocked(state.bgMode)) {
   state.bgMode = 'space';
   save();
 }
+document.body.classList.toggle('focus-mode', state.focusMode);
 
 // Activity listeners for idle mode
 ['mousemove', 'keydown', 'touchstart', 'scroll'].forEach((evt) => {
   window.addEventListener(evt, resetIdleTimer, { passive: true });
+});
+
+window.addEventListener('keydown', (e) => {
+  const tag = (document.activeElement?.tagName || '').toLowerCase();
+  if (tag === 'input' || tag === 'textarea' || tag === 'select') return;
+
+  if (e.key === 'Escape') {
+    document.getElementById('shortcut-help')?.classList.remove('show');
+    document.getElementById('fake-loader')?.classList.remove('show');
+    document.getElementById('easter-egg')?.classList.remove('show');
+    return;
+  }
+  if (e.key === '?' || (e.shiftKey && e.key === '/')) {
+    e.preventDefault();
+    toggleShortcutHelp();
+    return;
+  }
+  if (e.code === 'Space') {
+    e.preventDefault();
+    btn.click();
+    return;
+  }
+  const key = e.key.toLowerCase();
+  if (key === 'g') {
+    e.preventDefault();
+    cycleBgMode();
+    return;
+  }
+  if (key === 'c') {
+    e.preventDefault();
+    toggleSetting('chaos');
+    return;
+  }
+  if (key === 'r') {
+    e.preventDefault();
+    toggleSetting('reverse');
+    return;
+  }
+  if (key === 's') {
+    e.preventDefault();
+    toggleSetting('sound');
+    return;
+  }
+  if (key === 'f') {
+    e.preventDefault();
+    toggleFocusMode();
+  }
 });
 
 // Secret long press unlock
