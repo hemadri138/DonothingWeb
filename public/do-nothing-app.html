@@ -611,6 +611,89 @@
   }
   #dev-panel h3 { color: var(--accent2); margin-bottom: 8px; }
   #dev-panel p { font-family: 'JetBrains Mono', monospace; font-size: 0.72rem; color: var(--muted); margin-bottom: 12px; }
+  #mint-lab {
+    display: none;
+    position: fixed;
+    inset: 0;
+    z-index: 460;
+    background: rgba(2, 2, 8, 0.93);
+    backdrop-filter: blur(14px);
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+  }
+  #mint-lab.show { display: flex; }
+  .mint-box {
+    width: min(560px, 92vw);
+    border: 1px solid rgba(127,255,110,0.28);
+    border-radius: 16px;
+    background: rgba(255,255,255,0.03);
+    padding: 20px;
+  }
+  .mint-title {
+    font-size: 1.1rem;
+    color: var(--accent);
+    font-weight: 800;
+    margin-bottom: 6px;
+  }
+  .mint-sub {
+    font-size: 0.7rem;
+    font-family: 'JetBrains Mono', monospace;
+    color: var(--muted);
+    margin-bottom: 12px;
+  }
+  #mint-progress-wrap {
+    height: 10px;
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    overflow: hidden;
+    background: rgba(255,255,255,0.03);
+    margin-bottom: 10px;
+  }
+  #mint-progress {
+    height: 100%;
+    width: 0%;
+    background: linear-gradient(90deg, var(--accent), var(--accent3), var(--accent2));
+    transition: width 0.2s ease;
+  }
+  #mint-log {
+    height: 130px;
+    overflow: auto;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 10px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.65rem;
+    color: var(--muted);
+    margin-bottom: 10px;
+  }
+  #mint-log p { margin-bottom: 5px; }
+  .mint-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 8px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.68rem;
+  }
+  #mint-rarity {
+    padding: 4px 10px;
+    border-radius: 999px;
+    border: 1px solid rgba(255,255,255,0.18);
+    color: var(--text);
+  }
+  #mint-hash {
+    color: var(--accent3);
+    word-break: break-all;
+    font-size: 0.62rem;
+  }
+  .mint-actions {
+    display: flex;
+    gap: 8px;
+    margin-top: 12px;
+  }
+  .mint-actions .mini-btn { margin-top: 0; }
   body.reality-glitch {
     animation: reality-glitch 0.2s steps(2) 2;
     filter: hue-rotate(25deg) saturate(1.2);
@@ -1008,6 +1091,20 @@
     <button class="mini-btn" onclick="closeDevPanel()">Close Controls</button>
   </div>
 </div>
+<div id="mint-lab">
+  <div class="mint-box">
+    <div class="mint-title">MINT YOUR NOTHING // VOIDCHAIN</div>
+    <div class="mint-sub">Forging a provably useless digital artifact...</div>
+    <div id="mint-progress-wrap"><div id="mint-progress"></div></div>
+    <div id="mint-log"></div>
+    <div class="mint-row"><span>Rarity</span><span id="mint-rarity">Unrevealed</span></div>
+    <div class="mint-row"><span>Tx Hash</span><span id="mint-hash">—</span></div>
+    <div class="mint-actions">
+      <button class="mini-btn" id="mint-download" onclick="downloadMintCertificate()" disabled>Download Certificate</button>
+      <button class="mini-btn" onclick="closeMintLab()">Close Mint Lab</button>
+    </div>
+  </div>
+</div>
 <canvas id="stats-card-canvas" width="1080" height="1080" style="display:none;"></canvas>
 
 <script>
@@ -1046,6 +1143,9 @@ const state = {
   unlockedThemes: JSON.parse(localStorage.getItem('unlockedThemes') || '[]'),
   missionRewardClaimed: localStorage.getItem('missionRewardClaimed') === '1',
   missionDate: localStorage.getItem('missionDate') || new Date().toDateString(),
+  mintCount: parseInt(localStorage.getItem('mintCount') || '0'),
+  lastMint: JSON.parse(localStorage.getItem('lastMint') || 'null'),
+  minting: false,
   sessionStart: Date.now(),
 };
 
@@ -1075,6 +1175,8 @@ function save() {
   localStorage.setItem('unlockedThemes', JSON.stringify(state.unlockedThemes));
   localStorage.setItem('missionRewardClaimed', state.missionRewardClaimed ? '1' : '0');
   localStorage.setItem('missionDate', state.missionDate);
+  localStorage.setItem('mintCount', String(state.mintCount));
+  localStorage.setItem('lastMint', JSON.stringify(state.lastMint));
   localStorage.setItem('bgMode', state.bgMode);
 }
 
@@ -1182,7 +1284,10 @@ const levelTitles = [
   'God of Nothing',
   'Cosmic Slacker',
 ];
-const levels = Array.from({ length: 101 }, (_, i) => [i * 10, `${levelTitles[Math.floor(i / 10)]} ${i > 0 ? `#${i}` : ''}`.trim()]);
+const levels = Array.from({ length: 101 }, (_, i) => {
+  const titleIdx = Math.min(levelTitles.length - 1, Math.floor(i / 10));
+  return [i * 10, `${levelTitles[titleIdx]} ${i > 0 ? `#${i}` : ''}`.trim()];
+});
 const themeLevelReq = {
   space: 1,
   minimal: 3,
@@ -2085,8 +2190,141 @@ function prestigeReset() {
   initParticles();
 }
 
+function randomHex(len) {
+  const chars = 'abcdef0123456789';
+  let out = '';
+  for (let i = 0; i < len; i++) out += chars[Math.floor(Math.random() * chars.length)];
+  return out;
+}
+
+function pickMintRarity() {
+  const roll = Math.random();
+  if (roll < 0.01) return ['MYTHIC VOID', '#ff6ef0'];
+  if (roll < 0.08) return ['LEGENDARY NULL', '#ffd86e'];
+  if (roll < 0.25) return ['EPIC EMPTY', '#6effdc'];
+  if (roll < 0.6) return ['RARE SILENCE', '#6ebaff'];
+  return ['COMMON BLANK', '#a0a0c8'];
+}
+
+function closeMintLab() {
+  if (state.minting) return;
+  document.getElementById('mint-lab').classList.remove('show');
+}
+
+function appendMintLog(text, color) {
+  const log = document.getElementById('mint-log');
+  const p = document.createElement('p');
+  p.textContent = `> ${text}`;
+  if (color) p.style.color = color;
+  log.appendChild(p);
+  log.scrollTop = log.scrollHeight;
+}
+
 function mintNothing() {
-  showToast('Minting your Nothing... complete. Value: 0.');
+  if (state.minting) return;
+  state.minting = true;
+  const wrap = document.getElementById('mint-lab');
+  const progress = document.getElementById('mint-progress');
+  const log = document.getElementById('mint-log');
+  const rarityEl = document.getElementById('mint-rarity');
+  const hashEl = document.getElementById('mint-hash');
+  const dlBtn = document.getElementById('mint-download');
+
+  wrap.classList.add('show');
+  progress.style.width = '0%';
+  log.innerHTML = '';
+  rarityEl.textContent = 'Unrevealed';
+  rarityEl.style.color = '';
+  rarityEl.style.borderColor = 'rgba(255,255,255,0.18)';
+  hashEl.textContent = '—';
+  dlBtn.disabled = true;
+
+  const steps = [
+    'Booting Voidchain node...',
+    'Hashing existential entropy...',
+    'Compressing your nothing into 0 bytes...',
+    'Scanning for purpose... none found.',
+    'Engraving null signature...',
+    'Broadcasting to decentralized silence...',
+    'Validating zero-value asset...',
+    'Finalizing useless ownership...',
+  ];
+
+  let i = 0;
+  const iv = setInterval(() => {
+    const pct = Math.min(95, (i + 1) * 12 + Math.floor(Math.random() * 8));
+    progress.style.width = pct + '%';
+    appendMintLog(steps[i] || 'Stabilizing void resonance...');
+    if (state.sound) playClick();
+    i++;
+    if (i >= steps.length) {
+      clearInterval(iv);
+      setTimeout(() => {
+        const [rarity, color] = pickMintRarity();
+        const txHash = `0x${randomHex(64)}`;
+        progress.style.width = '100%';
+        rarityEl.textContent = rarity;
+        rarityEl.style.color = color;
+        rarityEl.style.borderColor = color;
+        hashEl.textContent = txHash;
+        appendMintLog('Mint complete. Ownership of nothing confirmed.', color);
+        state.lastMint = {
+          rarity,
+          color,
+          txHash,
+          id: `VOID-${Date.now().toString().slice(-8)}`,
+          time: new Date().toLocaleString(),
+        };
+        state.mintCount += 1;
+        state.coins += 5;
+        save();
+        updateUI();
+        dlBtn.disabled = false;
+        state.minting = false;
+        showToast(`Minted ${rarity}. +5 coins.`);
+      }, 700);
+    }
+  }, 340);
+}
+
+function downloadMintCertificate() {
+  if (!state.lastMint) {
+    showToast('No minted nothing found.');
+    return;
+  }
+  const canvas = document.getElementById('stats-card-canvas');
+  const c = canvas.getContext('2d');
+  const g = c.createLinearGradient(0, 0, 1080, 1080);
+  g.addColorStop(0, '#050508');
+  g.addColorStop(1, '#13061a');
+  c.fillStyle = g;
+  c.fillRect(0, 0, 1080, 1080);
+  c.strokeStyle = 'rgba(127,255,110,0.35)';
+  c.lineWidth = 3;
+  c.strokeRect(40, 40, 1000, 1000);
+  c.fillStyle = '#7fff6e';
+  c.font = 'bold 66px Syne';
+  c.fillText('CERTIFICATE OF NOTHING', 80, 150);
+  c.fillStyle = '#e8e8f0';
+  c.font = '38px Syne';
+  c.fillText(`Token: ${state.lastMint.id}`, 80, 250);
+  c.fillText(`Rarity: ${state.lastMint.rarity}`, 80, 320);
+  c.fillText(`Mint #: ${state.mintCount}`, 80, 390);
+  c.fillStyle = state.lastMint.color || '#6ebaff';
+  c.font = '28px JetBrains Mono';
+  c.fillText(`Tx: ${state.lastMint.txHash}`, 80, 470);
+  c.fillStyle = '#a5a5ba';
+  c.fillText(`Timestamp: ${state.lastMint.time}`, 80, 540);
+  c.fillText('Asset Utility: Absolutely none.', 80, 610);
+  c.fillText('Owner Rights: Exclusive access to emptiness.', 80, 670);
+  c.fillStyle = '#7fff6e';
+  c.fillText('https://teamdateweb.netlify.app/', 80, 760);
+  const url = canvas.toDataURL('image/png');
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `nothing-certificate-${state.lastMint.id}.png`;
+  a.click();
+  showToast('Nothing certificate downloaded.');
 }
 
 function closeDevPanel() {
