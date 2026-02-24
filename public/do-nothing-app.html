@@ -197,6 +197,21 @@
     70% { transform: scale(0.9) rotate(-5deg); }
     100% { transform: scale(1) rotate(0deg); }
   }
+  #do-nothing-btn.level-up {
+    animation: level-up-burst 0.95s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+  @keyframes level-up-burst {
+    0% { transform: scale(1); filter: brightness(1); }
+    20% { transform: scale(1.2) rotate(-7deg); filter: brightness(1.35); }
+    45% { transform: scale(0.9) rotate(5deg); filter: brightness(1.05); }
+    70% { transform: scale(1.12) rotate(-2deg); }
+    100% { transform: scale(1) rotate(0deg); filter: brightness(1); }
+  }
+  #do-nothing-btn.level-up::before,
+  #do-nothing-btn.level-up::after {
+    border-color: rgba(255, 255, 255, 0.45);
+    animation-duration: 0.8s;
+  }
   #do-nothing-btn.chaos-mode {
     animation: chaos-float 1s ease infinite;
   }
@@ -950,6 +965,7 @@
       <button class="share-btn" onclick="shareNothing()">📤 Share Nothing</button>
     </div>
   </div>
+
 </div>
 
 <!-- Fake Loader -->
@@ -1226,6 +1242,28 @@ function autoApplyThemeOnLevelUp(level) {
   applyThemeByMode(mode);
   save();
   showToast(`Theme unlocked: ${label}`);
+}
+
+function runLevelUpButtonFX(level) {
+  const label = document.getElementById('btn-text');
+  const old = label.innerHTML;
+  label.innerHTML = `LEVEL<br>${level}`;
+  btn.classList.remove('level-up');
+  btn.offsetHeight;
+  btn.classList.add('level-up');
+  showCombo(`LEVEL ${level}`);
+
+  const rect = btn.getBoundingClientRect();
+  const cx = rect.left + rect.width / 2;
+  const cy = rect.top + rect.height / 2;
+  for (let i = 0; i < 3; i++) {
+    setTimeout(() => createBurst(cx, cy), i * 80);
+  }
+
+  setTimeout(() => {
+    label.innerHTML = old;
+    btn.classList.remove('level-up');
+  }, 980);
 }
 
 // ── ACHIEVEMENTS ──
@@ -1773,6 +1811,7 @@ btn.addEventListener('click', function(e) {
 
   const newLevel = getLevelInfo(state.totalTaps).index + 1;
   if (newLevel > prevLevel) {
+    runLevelUpButtonFX(newLevel);
     autoApplyThemeOnLevelUp(newLevel);
   }
 
@@ -1943,7 +1982,11 @@ function switchTab(panelId, tabEl, updateHash = true) {
   tabEl.classList.add('active');
   document.body.setAttribute('data-page', panelId);
   if (updateHash) {
-    const hash = panelId === 'main-panel' ? '#home' : panelId === 'ach-panel' ? '#badges' : '#settings';
+    const hash = panelId === 'main-panel'
+      ? '#home'
+      : panelId === 'ach-panel'
+        ? '#badges'
+        : '#settings';
     if (location.hash !== hash) history.replaceState(null, '', hash);
   }
 }
@@ -2073,6 +2116,9 @@ function generateStatsCard() {
   c.fillStyle = '#6ebaff';
   c.font = '34px JetBrains Mono';
   c.fillText('#DoNothing #Productivity', 80, 620);
+  c.fillStyle = '#7fff6e';
+  c.font = '28px JetBrains Mono';
+  c.fillText('https://donothingweb.netlify.app/', 80, 700);
   const url = canvas.toDataURL('image/png');
   const a = document.createElement('a');
   a.href = url;
@@ -2132,7 +2178,7 @@ function showEasterEgg() {
 
 // ── SHARE ──
 function shareNothing() {
-  const text = `I've done nothing ${state.totalTaps} times on the Do Nothing App 🌀\nStreak: ${state.streak} days 🔥\nLevel: ${getLevelInfo(state.totalTaps).name}\n\n#DoNothing #Productivity`;
+  const text = `I've done nothing ${state.totalTaps} times on the Do Nothing App 🌀\nStreak: ${state.streak} days 🔥\nLevel: ${getLevelInfo(state.totalTaps).name}\nWebsite: https://teamdateweb.netlify.app/\n\n#DoNothing #Productivity`;
   if (navigator.share) {
     navigator.share({ title: 'Do Nothing', text }).catch(() => {});
   } else {
@@ -2201,7 +2247,11 @@ setInterval(fakeErrorPulse, 18000);
 
 function applyPageFromHash() {
   const hash = location.hash.toLowerCase();
-  const panelId = hash === '#badges' ? 'ach-panel' : hash === '#settings' ? 'settings-panel' : 'main-panel';
+  const panelId = hash === '#badges'
+    ? 'ach-panel'
+    : hash === '#settings'
+      ? 'settings-panel'
+      : 'main-panel';
   const btn = document.querySelector(`.tab-btn[data-panel="${panelId}"]`) || document.querySelector('.tab-btn[data-panel="main-panel"]');
   if (btn) switchTab(panelId, btn, false);
 }
